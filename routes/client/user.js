@@ -1,9 +1,7 @@
-import envConfig from "@/lib/envConfig";
-
-const base = envConfig.endPoint + "/user";
+const base = "/user";
 
 const user = {
-    login: base + "/login",
+    login: "/login",
     list: base + "/list"
 };
 

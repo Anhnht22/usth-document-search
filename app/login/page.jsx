@@ -1,6 +1,6 @@
 'use client'
 
-import {useState} from 'react'
+import {useEffect, useState} from 'react'
 import {Button} from "@/components/ui/button"
 import {Input} from "@/components/ui/input"
 import {Label} from "@/components/ui/label"
@@ -8,10 +8,11 @@ import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} f
 import {EyeIcon, EyeOffIcon} from 'lucide-react'
 import {useForm} from "react-hook-form";
 import {useLogin} from "@/hook/useUsers";
-import envConfig from "@/lib/envConfig";
+import envConfig from "@/utils/envConfig";
 import Cookies from 'js-cookie';
 import clientRoutes from "@/routes/client";
 import {useRouter} from "next/navigation";
+import {checkTokenExpiry} from "@/utils/common";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -44,8 +45,9 @@ export default function LoginPage() {
                 <form onSubmit={handleSubmit(onSubmit)}>
                     <CardHeader>
                         <CardTitle className="text-2xl font-bold text-center">Đăng nhập</CardTitle>
-                        <CardDescription className="text-center">Nhập thông tin đăng nhập của bạn để tiếp
-                            tục</CardDescription>
+                        <CardDescription className="text-center">
+                            Nhập thông tin đăng nhập của bạn để tiếp tục
+                        </CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
@@ -91,7 +93,7 @@ export default function LoginPage() {
                         </div>
                     </CardContent>
                     <CardFooter>
-                        <Button className="w-full" type="submit">Đăng nhập</Button>
+                        <Button className="w-full" type="submit" disabled={isPending}>Đăng nhập</Button>
                     </CardFooter>
                     <div className="text-center pb-6">
                         <a href="#" className="text-sm text-blue-600 hover:underline">Quên mật khẩu?</a>

@@ -1,4 +1,4 @@
-import user from "@/routes/api/user";
+import user from "@/routes/client/user";
 
 const clientRoutes = {
     home: "/",

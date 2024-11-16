@@ -1,4 +1,4 @@
-import envConfig from "@/lib/envConfig";
+import envConfig from "@/utils/envConfig";
 
 const base = envConfig.endPoint + "/user";
 
