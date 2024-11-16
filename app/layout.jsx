@@ -1,5 +1,6 @@
 import "@/app/globals.scss";
-import {Roboto} from "@next/font/google";
+import {Roboto} from "next/font/google";
+import QueryProvider from "@/components/tanstack/QueryProvider";
 
 const roboto = Roboto({
     subsets: ["latin"], // Chọn subset phù hợp, ví dụ: "latin", "cyrillic", v.v.
@@ -15,10 +16,8 @@ export const metadata = {
 export default function RootLayout({children}) {
     return (
         <html lang="en">
-        <body
-            className={`${roboto.variable} antialiased`}
-        >
-        {children}
+        <body className={`${roboto.variable} antialiased`}>
+        <QueryProvider>{children}</QueryProvider>
         </body>
         </html>
     );
