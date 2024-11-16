@@ -9,15 +9,33 @@ import {EyeIcon, EyeOffIcon} from 'lucide-react'
 import {useForm} from "react-hook-form";
 import {useLogin} from "@/hook/useUsers";
 import envConfig from "@/lib/envConfig";
+import Cookies from 'js-cookie';
+import clientRoutes from "@/routes/client";
+import {useRouter} from "next/navigation";
 
 export default function LoginPage() {
-    const {register, handleSubmit, formState: {errors}} = useForm();
+    const router = useRouter();
+    const {
+        register,
+        handleSubmit,
+        setError,
+        formState: {errors}
+    } = useForm();
     const [showPassword, setShowPassword] = useState(false);
-    const {mutate: login, isLoading, error} = useLogin();
+    const {mutate: login, isPending, isError, error} = useLogin();
 
-    const onSubmit = (data) => {
-        console.log(data);
-        // login(data);
+    const onSubmit = async (data) => {
+        login(data, {
+            onSuccess: async (response) => {
+                const {data: {token}} = response;
+                Cookies.set(envConfig.authToken, token, {expires: 30});
+                await router.push(clientRoutes.home);
+            },
+            onError: (error) => {
+                console.log("error: ", error);
+                setError("password", {message: "Sai tên đăng nhập hoặc mật khẩu"});
+            },
+        });
     }
 
     return (
@@ -32,17 +50,17 @@ export default function LoginPage() {
                     <CardContent>
                         <div className="space-y-4">
                             <div className="space-y-2">
-                                <Label htmlFor="email">
+                                <Label htmlFor="username">
                                     Email <span className="text-red-500">*</span>
                                 </Label>
                                 <Input
-                                    id="email"
-                                    type="email"
+                                    id="username"
+                                    type="text"
                                     placeholder="you@example.com"
-                                    {...register("email", {required: "Email là bắt buộc"})}
+                                    {...register("username", {required: "Username là bắt buộc"})}
                                 />
-                                {errors.email &&
-                                    <p className="text-red-500 text-xs text-right">{errors.email.message}</p>}
+                                {errors.username &&
+                                    <p className="text-red-500 text-xs text-right">{errors.username.message}</p>}
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="password">

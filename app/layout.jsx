@@ -1,4 +1,4 @@
-import "@/app/globals.scss";
+import "@/app/globals.css";
 import {Roboto} from "next/font/google";
 import QueryProvider from "@/components/tanstack/QueryProvider";
 

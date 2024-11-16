@@ -1,29 +1,25 @@
 import {useMutation} from '@tanstack/react-query'
+import apiRoutes from "@/routes/api";
+import apiHandle from "@/hook/base";
 
 const queryKeyUsers = "user";
 
 const loginUser = async (params) => {
-    const response = await fetch('https://jsonplaceholder.typicode.com/posts', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(params),
-    });
+    const response = await apiHandle(apiRoutes.user.login, params);
+    const data = await response.json();
 
-    // if (!response.ok) {
-    throw new Error('Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
-    // }
+    if (!response.ok) throw data;
 
-    // const data = await response.json();
-    // return data;
-
-    // const response = await fetch('https://jsonplaceholder.typicode.com/posts')
-    // const data = await response.json()
-    // return data.filter((x) => x.id <= limit)
+    return data;
 }
 
 const useLogin = () => {
     return useMutation({
         mutationFn: loginUser,
+        onSuccess: () => {
+        },
+        onError: () => {
+        },
     });
 }
 
