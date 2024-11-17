@@ -4,7 +4,7 @@ import clientRoutes from "@/routes/client";
 import {checkTokenExpiry} from "@/utils/common";
 
 export function middleware(req) {
-    // Ví dụ: Chuyển hướng nếu người dùng không đăng nhập
+    // Chuyển hướng nếu người dùng không đăng nhập
     const cookiesToken = req.cookies.get(envConfig.authToken); // Check trạng thái AuthToken đăng nhập trong cookie
     const authToken = cookiesToken ? cookiesToken.value : null;
     const isValidToken = authToken ? checkTokenExpiry(authToken).isValid : false;
@@ -17,10 +17,6 @@ export function middleware(req) {
     } else if (!isLoginPage) { // Nếu token không hợp lệ và không phải trang login thì chuyển hướng về trang login
         redirectUrl = clientRoutes.user.login;
     }
-
-    console.log("isValidToken: ", isValidToken);
-    console.log("isLoginPage: ", isLoginPage);
-    console.log("redirectUrl: ", redirectUrl);
 
     if (redirectUrl) {
         const url = req.nextUrl.clone();

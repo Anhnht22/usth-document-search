@@ -1,9 +1,10 @@
 import jwt from "jsonwebtoken";
 
 export const checkTokenExpiry = (token) => {
-    let result = {isValid: false, message: "Token không hợp lệ."};
+    let result;
     try {
         const currentTime = Math.floor(Date.now() / 1000);
+        console.log("currentTime", currentTime);
 
         const decoded = jwt.decode(token);
         if (!decoded || (decoded.exp && decoded.exp < currentTime)) { // Nếu token không có thông tin hết hạn thì server sẽ xử lý phần này
