@@ -37,6 +37,7 @@ class ApiBase {
     httpRequest(uri, method, data, options) {
         const authToken = getCookie(envConfig.authToken);
 
+        // Xử lý headers
         const headers = {
             'Content-Type': 'application/json',
             ...(authToken && {'Authorization': `${authToken}`}),
