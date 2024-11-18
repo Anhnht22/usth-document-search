@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 
 export const checkTokenExpiry = (token) => {
-    let result = {isValid: false, message: "Token không hợp lệ."};
+    let result;
     try {
         const currentTime = Math.floor(Date.now() / 1000);
 
