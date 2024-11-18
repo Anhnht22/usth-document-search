@@ -19,14 +19,14 @@ export function middleware(req) {
         if (isLoginPage) { // Nếu token hợp lệ và đang ở trang login thì chuyển hướng về trang chính
             redirectUrl = clientRoutes.home.path;
         } else { // Kiểm tra quyền truy cập
-            /**
-             * TODO: Tạm thời để mặc định quyền amdin
-             * @type {string}
-             */
-            const role = rolesType.admin; //req.cookies.get(envConfig.authRole)?.value;
-            if (!findRouteRecursive(clientRoutes, pathname, role)) {
-                redirectUrl = clientRoutes.error["403"];
-            }
+            // /**
+            //  * TODO: Tạm thời để mặc định quyền amdin
+            //  * @type {string}
+            //  */
+            // const role = rolesType.admin; //req.cookies.get(envConfig.authRole)?.value;
+            // if (!findRouteRecursive(clientRoutes, pathname, role)) {
+            //     redirectUrl = clientRoutes.error["403"];
+            // }
         }
     } else if (!isLoginPage) { // Nếu token không hợp lệ và không phải trang login thì chuyển hướng về trang login
         redirectUrl = clientRoutes.user.login.path;

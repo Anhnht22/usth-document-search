@@ -1,6 +1,6 @@
 'use client'
 
-import {useEffect, useState} from 'react'
+import {useState} from 'react'
 import {Button} from "@/components/ui/button"
 import {Input} from "@/components/ui/input"
 import {Label} from "@/components/ui/label"
@@ -12,7 +12,6 @@ import envConfig from "@/utils/envConfig";
 import Cookies from 'js-cookie';
 import clientRoutes from "@/routes/client";
 import {useRouter} from "next/navigation";
-import {checkTokenExpiry} from "@/utils/common";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -30,7 +29,7 @@ export default function LoginPage() {
             onSuccess: async (response) => {
                 const {data: {token}} = response;
                 Cookies.set(envConfig.authToken, token, {expires: 30});
-                await router.push(clientRoutes.home);
+                await router.push(clientRoutes.home.path);
             },
             onError: (error) => {
                 console.log("error: ", error);

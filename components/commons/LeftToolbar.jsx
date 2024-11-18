@@ -5,15 +5,16 @@ import {cn} from "@/lib/utils";
 import {Button} from "@/components/ui/button";
 import {usePathname} from "next/navigation";
 import {useEffect, useState} from "react";
-import {BarChart2, ChevronLeft, ChevronRight, FileText, Home, Settings, Users} from "lucide-react";
+import {Building2, ChevronLeft, ChevronRight, FileText, Home, Settings, Users} from "lucide-react";
 import Link from "next/link";
 import logo from "@/public/logo.png";
 import Image from "next/image";
 import clientRoutes from "@/routes/client";
 
 const menuItems = [
-    {name: "Home", icon: Home, href: clientRoutes.home},
+    {name: clientRoutes.home.title, icon: Home, href: clientRoutes.home.path},
     {name: "Users", icon: Users, href: "/users"},
+    {name: clientRoutes.department.list.title, icon: Building2, href: clientRoutes.department.list.path},
     {
         name: "Reports",
         icon: FileText,
@@ -23,7 +24,6 @@ const menuItems = [
             {name: "Monthly", href: "/reports/monthly"},
         ]
     },
-    {name: "Analytics", icon: BarChart2, href: "/analytics"},
     {name: "Settings", icon: Settings, href: "/settings"},
 ]
 
@@ -69,8 +69,8 @@ const LeftToolbar = () => {
     return (
         <TooltipProvider>
             <div
-                className={cn("fixed h-[100dvh] w-[var(--left-toolbar-width)]",
-                    "top-0 bg-white shadow bg-background",
+                className={cn("absolute h-[100dvh] w-[var(--left-toolbar-width)]",
+                    "top-0 bg-white shadow bg-background overflow-hidden",
                     "transition-all duration-300 flex flex-col px-2 pb-2",
                 )}>
 

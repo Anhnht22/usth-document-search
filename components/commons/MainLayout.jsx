@@ -7,7 +7,7 @@ const MainLayout = ({children}) => {
         <>
             <Header/>
             <LeftToolbar/>
-            <main className={cn("mt-[calc(var(--header-height))] ml-[calc(var(--left-toolbar-width))] pt-3 pl-3",
+            <main className={cn("mt-[calc(var(--header-height))] ml-[calc(var(--left-toolbar-width))] py-3 px-3",
                 "h-[calc(100dvh-var(--header-height))] transition-all duration-300",
             )}>
                 {children}

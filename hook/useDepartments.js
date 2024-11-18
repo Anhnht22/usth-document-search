@@ -1,17 +1,19 @@
 import {useQuery} from '@tanstack/react-query'
+import apiRoutes from "@/routes/api";
+import ApiBase from "@/hook/base";
 
-const queryKeyDepartments = "user";
+const queryKeyDepartments = "departments";
 
-const fetchDepartments = async (limit = 10) => {
-    const response = await fetch('https://jsonplaceholder.typicode.com/posts')
-    const data = await response.json()
-    return data.filter((x) => x.id <= limit)
+const fetchDepartments = async (params) => {
+    const response = await new ApiBase().httpGet(apiRoutes.department.list, params);
+    const data = await response.json();
+    return data.data;
 }
 
-const useDepartments = (limit) => {
+const useDepartments = (params) => {
     return useQuery({
-        queryKey: [queryKeyDepartments, limit],
-        queryFn: () => fetchDepartments(limit),
+        queryKey: [queryKeyDepartments, JSON.stringify(params)],
+        queryFn: () => fetchDepartments(params),
     })
 }
 
