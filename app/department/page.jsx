@@ -23,7 +23,7 @@ const Department = () => {
                                 <TableHead className={cn("w-20")}>ID</TableHead>
                                 <TableHead className={cn("min-w-[300px]")}>Tên phòng ban</TableHead>
                                 <TableHead className={cn("min-w-[300px]")}>Mô tả</TableHead>
-                                {/*<TableHead className={cn("w-32 text-center")}>Trạng thái</TableHead>*/}
+                                <TableHead className={cn("w-32 text-center")}>Trạng thái</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -32,13 +32,13 @@ const Department = () => {
                                     <TableCell>{department.department_id}</TableCell>
                                     <TableCell>{department.department_name}</TableCell>
                                     <TableCell>{department.description}</TableCell>
-                                    {/*<TableCell className={cn("flex justify-center")}>*/}
-                                    {/*    {department.active ? (*/}
-                                    {/*        <CheckCircle2 className="text-green-500"/>*/}
-                                    {/*    ) : (*/}
-                                    {/*        <XCircle className="text-red-500"/>*/}
-                                    {/*    )}*/}
-                                    {/*</TableCell>*/}
+                                    <TableCell className={cn("flex justify-center")}>
+                                        {department.active ? (
+                                            <CheckCircle2 className="text-green-500"/>
+                                        ) : (
+                                            <XCircle className="text-red-500"/>
+                                        )}
+                                    </TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
