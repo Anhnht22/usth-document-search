@@ -18,7 +18,7 @@ export default function RootLayout({children}) {
         <html lang="en">
         <body className={`${roboto.variable} antialiased`}>
         <QueryProvider>
-            <main>{children}</main>
+            {children}
         </QueryProvider>
         </body>
         </html>
