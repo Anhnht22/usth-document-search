@@ -59,7 +59,7 @@ class ApiBase {
             }
             return response;
         }).catch((error) => {
-            console.error("API Request failed:", error);
+            console.log("API Request failed:", error);
             throw error;
         });
     }
