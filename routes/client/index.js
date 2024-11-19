@@ -1,7 +1,6 @@
 import user from "@/routes/client/user";
 import department from "@/routes/client/deparment";
 import error from "@/routes/client/error";
-
 import {rolesType} from "@/roles/constants";
 
 const clientRoutes = {

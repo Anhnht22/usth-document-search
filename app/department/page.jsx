@@ -5,6 +5,7 @@ import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
 import {cn} from "@/lib/utils";
 import {useDepartments} from "@/hook/useDepartments";
+import {CheckCircle2, XCircle} from "lucide-react";
 
 const Department = () => {
     const {data: listDepartment, isPending, isFetching} = useDepartments({limit: 20});
@@ -27,20 +28,23 @@ const Department = () => {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {listDepartment?.map((department) => (
-                                <TableRow key={department.department_id}>
-                                    <TableCell>{department.department_id}</TableCell>
-                                    <TableCell>{department.department_name}</TableCell>
-                                    <TableCell>{department.description}</TableCell>
-                                    <TableCell className={cn("flex justify-center")}>
-                                        {department.active ? (
-                                            <CheckCircle2 className="text-green-500"/>
-                                        ) : (
-                                            <XCircle className="text-red-500"/>
-                                        )}
-                                    </TableCell>
-                                </TableRow>
-                            ))}
+                            {listDepartment?.map((department) => {
+                                const {department_id, department_name, description, active} = department
+                                return (
+                                    <TableRow key={department_id}>
+                                        <TableCell>{department_id}</TableCell>
+                                        <TableCell>{department_name}</TableCell>
+                                        <TableCell>{description}</TableCell>
+                                        <TableCell className={cn("flex justify-center")}>
+                                            {active ? (
+                                                <CheckCircle2 className="text-green-500"/>
+                                            ) : (
+                                                <XCircle className="text-red-500"/>
+                                            )}
+                                        </TableCell>
+                                    </TableRow>
+                                )
+                            })}
                         </TableBody>
                     </Table>
                 </CardContent>

@@ -1,26 +1,31 @@
 import roles from "@/roles";
 
-const findRouteRecursive = (routes, pathname, userRole) => {
+// Hàm kiểm tra khớp route (bao gồm dynamic route)
+const isRouteMatch = (templatePath, actualPath) => {
+    // Chuyển template thành regex (ví dụ: "/user/:id" thành "/user/[^/]+$")
+    const regex = new RegExp(
+        `^${templatePath.replace(/:\w+/g, '[^/]+')}$`
+    );
+    return regex.test(actualPath);
+};
+
+// Hàm đệ quy tìm route
+function findRoute(routes, path) {
     for (const key in routes) {
-        const route = routes[key];
-
-        if (typeof route === "string" && route === pathname) {
-            return true; // Nếu route không phân quyền thì mặc định có quyền
-        }
-
-        if (route.path === pathname) {
-            return route.roles.includes(userRole); // Nếu tìm thấy đường dẫn, kiểm tra quyền
-        }
-
-        // Nếu route là một object chứa các cấp con
-        if (typeof route === "object" && !Array.isArray(route)) {
-            if (findRouteRecursive(route, pathname, userRole)) {
-                return true; // Nếu tìm thấy route con thì trả về true
+        if (typeof routes[key] === 'object') {
+            if (routes[key].path) {
+                if (isRouteMatch(routes[key].path, path)) {
+                    return routes[key];
+                }
+            } else {
+                const found = findRoute(routes[key], path);
+                if (found) return found;
             }
+        } else if (routes[key] === path) {
+            return routes[key];
         }
     }
-
-    return false; // Không tìm thấy route hoặc không có quyền
+    return null;
 }
 
 const validRoleAction = (role, functionality, action) => {
@@ -28,6 +33,6 @@ const validRoleAction = (role, functionality, action) => {
 }
 
 export {
-    findRouteRecursive,
+    findRoute,
     validRoleAction
 }
