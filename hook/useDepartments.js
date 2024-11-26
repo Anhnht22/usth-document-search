@@ -10,6 +10,12 @@ const fetchDepartments = async (params) => {
     return data.data;
 }
 
+const createDepartment = async (params) => {
+    const response = await new ApiBase().httpPost(apiRoutes.department.create, params);
+    const data = await response.json();
+    return data.data;
+};
+
 const useDepartments = (params) => {
     return useQuery({
         queryKey: [queryKeyDepartments, JSON.stringify(params)],
