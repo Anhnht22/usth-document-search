@@ -7,13 +7,13 @@ import {Label} from "@/components/ui/label"
 import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card"
 import {EyeIcon, EyeOffIcon} from 'lucide-react'
 import {useForm} from "react-hook-form";
-import {useLogin} from "@/hook/useUsers";
-import envConfig from "@/utils/envConfig";
-import Cookies from 'js-cookie';
-import clientRoutes from "@/routes/client";
 import {useRouter} from "next/navigation";
+import {useAuth} from "@/provider/AuthProvider";
+import clientRoutes from "@/routes/client";
 
 export default function LoginPage() {
+    const {isPendingLogin, login} = useAuth();
+
     const router = useRouter();
     const {
         register,
@@ -22,19 +22,14 @@ export default function LoginPage() {
         formState: {errors}
     } = useForm();
     const [showPassword, setShowPassword] = useState(false);
-    const {mutate: login, isPending, isError, error} = useLogin();
 
-    const onSubmit = async (data) => {
-        login(data, {
-            onSuccess: async (response) => {
-                const {data: {token}} = response;
-                Cookies.set(envConfig.authToken, token, {expires: 30});
-                await router.push(clientRoutes.home.path);
-            },
-            onError: (error) => {
-                console.log("error: ", error);
+    const onSubmit = (data) => {
+        login(data, async (response, error) => {
+            if (error) {
                 setError("password", {message: "Sai tên đăng nhập hoặc mật khẩu"});
-            },
+            } else {
+                await router.push(clientRoutes.home.path);
+            }
         });
     }
 
@@ -92,7 +87,7 @@ export default function LoginPage() {
                         </div>
                     </CardContent>
                     <CardFooter>
-                        <Button className="w-full" type="submit" disabled={isPending}>Đăng nhập</Button>
+                        <Button className="w-full" type="submit" disabled={isPendingLogin}>Đăng nhập</Button>
                     </CardFooter>
                     <div className="text-center pb-6">
                         <a href="#" className="text-sm text-blue-600 hover:underline">Quên mật khẩu?</a>
