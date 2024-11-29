@@ -14,23 +14,25 @@ import {toast} from "react-toastify";
 import {v4} from "uuid";
 
 const DeactivateConfirmDialog = ({department, isOpen, onOpenChange}) => {
+    const {department_id, department_name, active} = department || {};
+
     const updateDepartmentMutation = useUpdateDepartment();
 
     const updateDepartment = (id, updateItem, params) => {
+        const {department_name, description, active} = updateItem || {};
+
         updateDepartmentMutation.mutate({
             id: id,
             params: {
-                department_name: updateItem?.department_name,
-                description: updateItem?.description,
-                active: updateItem?.active,
+                department_name: department_name,
+                description: description,
+                active: active,
                 ...params,
             }
         });
     }
 
     useEffect(() => {
-        const {department_name} = department || {};
-
         if (updateDepartmentMutation.data) {
             const {returnCode} = updateDepartmentMutation.data
             if (returnCode === 200) {
@@ -43,18 +45,18 @@ const DeactivateConfirmDialog = ({department, isOpen, onOpenChange}) => {
                 updateDepartmentMutation.reset();
             }
         }
-    }, [updateDepartmentMutation.data, department]);
+    }, [updateDepartmentMutation.data, department_name]);
 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>
-                        {department?.active ? "Deactivate" : "Activate"}
+                        {active ? "Deactivate" : "Activate"}
                     </DialogTitle>
                     <DialogDescription>
-                        Are you sure you want to {department?.active ? "deactivate" : "activate"}
-                        <span className={cn("font-extrabold")}> {department?.department_name}</span>?
+                        Are you sure you want to {active ? "deactivate" : "activate"}
+                        <span className={cn("font-extrabold")}> {department_name}</span>?
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter>
@@ -63,7 +65,7 @@ const DeactivateConfirmDialog = ({department, isOpen, onOpenChange}) => {
                     </Button>
                     <Button
                         disabled={updateDepartmentMutation.isPending}
-                        onClick={() => updateDepartment(department_id, department, {active: department?.active ? 0 : 1})}
+                        onClick={() => updateDepartment(department_id, department, {active: active ? 0 : 1})}
                     >
                         Xác nhận
                     </Button>

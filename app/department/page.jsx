@@ -3,9 +3,9 @@
 import MainLayout from "@/components/commons/MainLayout";
 import {Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
 import {cn} from "@/lib/utils";
-import {useDeletePermanentlyDepartment, useDepartments} from "@/hook/useDepartments";
+import {useDepartments} from "@/hook/useDepartments";
 import {CheckCircle2, EllipsisVertical, XCircle} from "lucide-react";
-import {useEffect, useMemo, useState} from "react";
+import {useMemo, useState} from "react";
 import {Button} from "@/components/ui/button";
 import {Typography} from "@/components/ui/typography";
 import {omit} from "lodash";
@@ -13,18 +13,10 @@ import CreateDepartmentDialog from "@/app/department/CreateDepartmentDialog";
 import {v4} from "uuid";
 import {CustomPagination} from "@/components/commons/CustomPagination";
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle
-} from "@/components/ui/dialog";
-import {toast} from "react-toastify";
 import UpdateDepartmentDialog from "@/app/department/UpdateDepartmentDialog";
 import SearchForm from "@/app/department/SearchForm";
 import DeactivateConfirmDialog from "@/app/department/DeactivateConfirmDialog";
+import DeleteDepartmentDialog from "@/app/department/DeleteDepartmentDialog";
 
 const Department = () => {
     const [page, setPage] = useState(1);
@@ -32,10 +24,10 @@ const Department = () => {
     const [filter, setFilter] = useState({});
 
     const [selectedItem, setSelectedItem] = useState(null);
-    const [isOpenDeletePermanentlyDialog, setIsOpenDeletePermanentlyDialog] = useState(false);
-    const [isOpenUpdateDialog, setIsOpenUpdateDialog] = useState(false);
 
+    const [isOpenUpdateDialog, setIsOpenUpdateDialog] = useState(false);
     const [isOpenDeactivateDialog, setIsOpenDeactivateDialog] = useState(false);
+    const [isOpenDeleteDialog, setIsOpenDeleteDialog] = useState(false);
 
     const {data: listDepartmentResp, isLoading, isFetching} = useDepartments({
         limit: 20,
@@ -44,61 +36,6 @@ const Department = () => {
         ...(filter.active === "all" ? omit(filter, "active") : filter)
     });
     const {data: listDepartment, total: totalDepartment} = listDepartmentResp || {};
-
-    const deletePermanentlyDepartmentMutation = useDeletePermanentlyDepartment();
-
-    const deletePermanentlyDepartment = (id) => {
-        deletePermanentlyDepartmentMutation.mutate(id);
-    }
-
-    useEffect(() => {
-        if (deletePermanentlyDepartmentMutation.data) {
-            const {returnCode} = deletePermanentlyDepartmentMutation.data
-            if (returnCode === 200) {
-                setIsOpenDeletePermanentlyDialog(false);
-                toast.success(
-                    <div key={v4()}>
-                        Delete permanently department <b>{selectedItem?.department_name}</b> successfully
-                    </div>
-                );
-                deletePermanentlyDepartmentMutation.reset();
-            }
-        }
-    }, [deletePermanentlyDepartmentMutation.data, selectedItem]);
-
-    const deleteDepartmentPermanentlyConfirm = useMemo(() => {
-        if (selectedItem) {
-            const {department_id, department_name} = selectedItem;
-
-            return isOpenDeletePermanentlyDialog && (
-                <Dialog open={isOpenDeletePermanentlyDialog} onOpenChange={setIsOpenDeletePermanentlyDialog}>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>
-                                Delete Permanently
-                            </DialogTitle>
-                            <DialogDescription>
-                                Are you sure you want to delete permanently {department_name}?
-                            </DialogDescription>
-                        </DialogHeader>
-                        <DialogFooter>
-                            <Button variant="outline" onClick={() => setIsOpenDeletePermanentlyDialog(false)}>
-                                Hủy
-                            </Button>
-                            <Button
-                                disabled={deletePermanentlyDepartmentMutation.isPending}
-                                onClick={() => deletePermanentlyDepartment(department_id)}
-                            >
-                                Xác nhận
-                            </Button>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
-            )
-        }
-
-        return <></>
-    }, [isOpenDeletePermanentlyDialog, selectedItem, deletePermanentlyDepartmentMutation.isPending]);
 
     const pagination = useMemo(() => {
         if (!totalDepartment) return <></>;
@@ -216,9 +153,11 @@ const Department = () => {
                 onOpenChange={setIsOpenDeactivateDialog}
             />
 
-            {
-                deleteDepartmentPermanentlyConfirm
-            }
+            <DeleteDepartmentDialog
+                department={selectedItem}
+                isOpen={isOpenDeleteDialog}
+                onOpenChange={setIsOpenDeleteDialog}
+            />
         </MainLayout>
     )
 }
