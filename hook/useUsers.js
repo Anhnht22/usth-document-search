@@ -1,8 +1,14 @@
-import {useMutation} from '@tanstack/react-query'
+import {useMutation, useQuery} from '@tanstack/react-query'
 import apiRoutes from "@/routes/api";
 import ApiBase from "@/hook/base";
 
 const queryKeyUsers = "user";
+
+const fetchUser = async (params) => {
+    const response = await new ApiBase().httpGet(apiRoutes.user.list, params);
+    const data = await response.json();
+    return data.data;
+}
 
 const loginUser = async (params) => {
     const response = await new ApiBase().httpPost(apiRoutes.user.login, params);
@@ -23,4 +29,11 @@ const useLogin = () => {
     });
 }
 
-export {queryKeyUsers, useLogin, loginUser}
+const useUser = (params) => {
+    return useQuery({
+        queryKey: [queryKeyUsers, JSON.stringify(params)],
+        queryFn: () => fetchUser(params),
+    })
+}
+
+export {queryKeyUsers, loginUser, useLogin, fetchUser, useUser}

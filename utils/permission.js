@@ -3,10 +3,12 @@ import roles from "@/roles";
 // Hàm kiểm tra khớp route (bao gồm dynamic route)
 const isRouteMatch = (templatePath, actualPath) => {
     // Chuyển template thành regex (ví dụ: "/user/:id" thành "/user/[^/]+$")
-    const regex = new RegExp(
-        `^${templatePath.replace(/:\w+/g, '[^/]+')}$`
-    );
-    return regex.test(actualPath);
+    const normalizedTemplatePath = templatePath.replace(/\/+$/, '');
+    const normalizedActualPath = actualPath.replace(/\/+$/, '');
+
+    const regex = new RegExp(`^${normalizedTemplatePath.replace(/:\w+/g, '[^/]+')}$`);
+
+    return regex.test(normalizedActualPath);
 };
 
 // Hàm đệ quy tìm route

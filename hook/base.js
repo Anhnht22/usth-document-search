@@ -24,7 +24,14 @@ class ApiBase {
         const url = new URL(uri);
         if (params) {
             Object.keys(params).forEach((key) => {
-                url.searchParams.append(key, params[key]);
+                if (Array.isArray(params[key])) {
+                    params[key].forEach((value) => {
+                        // url.searchParams.append(key + "[]", value);
+                        url.searchParams.append(key, value);
+                    });
+                } else {
+                    url.searchParams.append(key, params[key]);
+                }
             });
         }
         return this.httpRequest(url.toString(), "GET", undefined, options);

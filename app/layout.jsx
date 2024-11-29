@@ -1,8 +1,10 @@
 import "./globals.scss";
+import 'react-toastify/dist/ReactToastify.css';
 import {Roboto} from "next/font/google";
 import QueryProvider from "@/components/tanstack/QueryProvider";
 import {AuthProvider} from "@/provider/AuthProvider";
 import {GlobalProvider} from "@/provider/GlobalProvider";
+import {ToastContainer} from 'react-toastify';
 
 const roboto = Roboto({
     subsets: ["latin"], // Chọn subset phù hợp, ví dụ: "latin", "cyrillic", v.v.
@@ -22,6 +24,7 @@ export default function RootLayout({children}) {
         <QueryProvider>
             <AuthProvider>
                 <GlobalProvider>
+                    <ToastContainer position="bottom-left"/>
                     {children}
                 </GlobalProvider>
             </AuthProvider>

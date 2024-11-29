@@ -1,4 +1,8 @@
 import jwt from "jsonwebtoken";
+import dayjs from "dayjs";
+
+export const ddMMYYYY = "DD/MM/YYYY";
+export const ddMMYYYYHHmm = "DD/MM/YYYY HH:mm";
 
 export const checkTokenExpiry = (token) => {
     let result;
@@ -15,4 +19,15 @@ export const checkTokenExpiry = (token) => {
         result = {isValid: false, message: error.message};
     }
     return result;
+}
+
+export const listActiveOptions = [
+    {value: "1", label: "Active"},
+    {value: "0", label: "Inactive"}
+];
+
+export const convertUnixDate = (unixTimestamp, format = ddMMYYYYHHmm) => {
+    if (!unixTimestamp) return null;
+
+    return dayjs.unix(unixTimestamp).format(format);
 }

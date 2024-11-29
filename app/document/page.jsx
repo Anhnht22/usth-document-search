@@ -5,7 +5,7 @@ import {cn} from "@/lib/utils";
 import {Typography} from "@/components/ui/typography";
 import CreateDepartmentDialog from "@/app/department/CreateDepartmentDialog";
 import {Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
-import {CheckCircle2, ChevronRight, Filter, XCircle} from "lucide-react";
+import {Calendar, CalendarIcon, CheckCircle2, ChevronRight, Filter, XCircle} from "lucide-react";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Form, FormControl, FormField, FormItem, FormLabel} from "@/components/ui/form";
 import {Input} from "@/components/ui/input";
@@ -13,18 +13,21 @@ import {Button} from "@/components/ui/button";
 import {useForm, useWatch} from "react-hook-form";
 import {useEffect, useMemo, useState} from "react";
 import {debounce} from "lodash";
-import {useUser} from "@/hook/useUsers";
-import {useRole} from "@/hook/useRole";
 import {MultiSelect} from "@/components/ui/multi-select";
-import {listActiveOptions} from "@/utils/common";
+import {convertUnixDate, ddMMYYYY, listActiveOptions} from "@/utils/common";
+import {useDocument} from "@/hook/useDocument";
+import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
+import {format} from "date-fns";
 
 const ListUser = () => {
     const form = useForm({
         defaultValues: {
-            username: "",
-            email: "",
-            role_name: [],
-            active: []
+            topic: "",
+            title: "",
+            description: "",
+            created_by: [],
+            created_date: "",
+            active: [],
         }
     });
     const searchParams = useWatch({control: form.control});
@@ -38,21 +41,10 @@ const ListUser = () => {
         [setDebounceFilter]
     );
 
-    const {data: listDepartment, isLoading, isFetching} = useUser({
+    const {data: listDocument, isLoading, isFetching} = useDocument({
         limit: 20,
         ...debounceFilter
     });
-
-    const {
-        data: listRole,
-        isLoading: isLoadingRole,
-        isFetching: isFetchingRole
-    } = useRole();
-
-    const listRoleOptions = listRole?.map(({role_id, role_name}) => ({
-        value: role_id,
-        label: role_name
-    })) ?? [];
 
     const toggleSidebar = () => {
         setIsSidebarVisible(prev => !prev);
@@ -78,27 +70,40 @@ const ListUser = () => {
                         <TableHeader>
                             <TableRow>
                                 <TableHead className={cn("w-20")}>ID</TableHead>
-                                <TableHead className={cn("min-w-[300px]")}>Username</TableHead>
-                                <TableHead className={cn("min-w-[300px]")}>Email</TableHead>
-                                <TableHead className={cn("w-32")}>Role</TableHead>
+                                <TableHead className={cn("min-w-[150px]")}>Topic</TableHead>
+                                <TableHead className={cn("w-[250px]")}>Title</TableHead>
+                                <TableHead className={cn("w-[300px]")}>Description</TableHead>
+                                <TableHead className={cn("min-w-[300px]")}>File path</TableHead>
+                                <TableHead className={cn("min-w-36")}>Created by</TableHead>
+                                <TableHead className={cn("w-60")}>Created date</TableHead>
                                 <TableHead className={cn("w-32 text-center")}>Status</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {listDepartment?.map((department) => {
-                                const {user_id, username, email, role_name, active} = department
+                            {listDocument?.map((item) => {
+                                const {
+                                    document_id, file_path, title, description, upload_date,
+                                    document_active, username, topic_name
+                                } = item;
+                                const uploadString = convertUnixDate(upload_date / 1000, ddMMYYYY);
+
                                 return (
-                                    <TableRow key={user_id}>
-                                        <TableCell>{user_id}</TableCell>
+                                    <TableRow key={document_id}>
+                                        <TableCell>{document_id}</TableCell>
+                                        <TableCell>{topic_name}</TableCell>
+                                        <TableCell>{title}</TableCell>
+                                        <TableCell>{description}</TableCell>
+                                        <TableCell>{file_path}</TableCell>
                                         <TableCell>{username}</TableCell>
-                                        <TableCell>{email}</TableCell>
-                                        <TableCell>{role_name}</TableCell>
-                                        <TableCell className={cn("flex justify-center")}>
-                                            {active ? (
-                                                <CheckCircle2 className="text-green-500"/>
-                                            ) : (
-                                                <XCircle className="text-red-500"/>
-                                            )}
+                                        <TableCell>{uploadString}</TableCell>
+                                        <TableCell>
+                                            <div className={cn("flex justify-center")}>
+                                                {document_active ? (
+                                                    <CheckCircle2 className="text-green-500"/>
+                                                ) : (
+                                                    <XCircle className="text-red-500"/>
+                                                )}
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 )
@@ -141,44 +146,84 @@ const ListUser = () => {
                                         <div className="space-y-4">
                                             <FormField
                                                 control={form.control}
-                                                name="username"
+                                                name="topic"
                                                 render={({field}) => (
                                                     <FormItem>
                                                         <FormLabel className={cn("font-bold")}>
-                                                            Username
+                                                            Topic
                                                         </FormLabel>
                                                         <FormControl>
-                                                            <Input placeholder="Username..." {...field} />
+                                                            <Input placeholder="Topic..." {...field} />
                                                         </FormControl>
                                                     </FormItem>
                                                 )}
                                             />
                                             <FormField
                                                 control={form.control}
-                                                name="email"
+                                                name="title"
                                                 render={({field}) => (
                                                     <FormItem>
                                                         <FormLabel className={cn("font-bold")}>
-                                                            Email
+                                                            Title
                                                         </FormLabel>
                                                         <FormControl>
-                                                            <Input placeholder="Email..." {...field} />
+                                                            <Input placeholder="Title..." {...field} />
                                                         </FormControl>
                                                     </FormItem>
                                                 )}
                                             />
                                             <FormField
                                                 control={form.control}
-                                                name="role_name"
+                                                name="description"
                                                 render={({field}) => (
                                                     <FormItem>
-                                                        <FormLabel className={cn("font-bold")}>Status</FormLabel>
-                                                        <MultiSelect
-                                                            options={listRoleOptions}
-                                                            onValueChange={field.onChange}
-                                                            defaultValue={field.value}
-                                                            placeholder="Select role"
-                                                        />
+                                                        <FormLabel className={cn("font-bold")}>
+                                                            Description
+                                                        </FormLabel>
+                                                        <FormControl>
+                                                            <Input placeholder="Description..." {...field} />
+                                                        </FormControl>
+                                                    </FormItem>
+                                                )}
+                                            />
+                                            <FormField
+                                                control={form.control}
+                                                name="created_date"
+                                                render={({field}) => (
+                                                    <FormItem className="flex flex-col">
+                                                        <FormLabel>Date of birth</FormLabel>
+                                                        <Popover>
+                                                            <PopoverTrigger asChild>
+                                                                <FormControl>
+                                                                    <Button
+                                                                        variant={"outline"}
+                                                                        className={cn(
+                                                                            "w-[240px] pl-3 text-left font-normal",
+                                                                            !field.value && "text-muted-foreground"
+                                                                        )}
+                                                                    >
+                                                                        {field.value ? (
+                                                                            format(field.value, "PPP")
+                                                                        ) : (
+                                                                            <span>Pick a date</span>
+                                                                        )}
+                                                                        <CalendarIcon
+                                                                            className="ml-auto h-4 w-4 opacity-50"/>
+                                                                    </Button>
+                                                                </FormControl>
+                                                            </PopoverTrigger>
+                                                            <PopoverContent className="w-auto p-0" align="start">
+                                                                <Calendar
+                                                                    mode="single"
+                                                                    selected={field.value}
+                                                                    onSelect={field.onChange}
+                                                                    disabled={(date) =>
+                                                                        date > new Date() || date < new Date("1900-01-01")
+                                                                    }
+                                                                    initialFocus
+                                                                />
+                                                            </PopoverContent>
+                                                        </Popover>
                                                     </FormItem>
                                                 )}
                                             />
