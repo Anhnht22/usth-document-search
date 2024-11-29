@@ -48,7 +48,7 @@ const Department = () => {
             page={pages}
             onPageChange={setPage}
         />
-    })
+    }, [totalDepartment]);
 
     return (
         <MainLayout>
