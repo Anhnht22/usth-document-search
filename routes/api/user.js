@@ -4,7 +4,7 @@ const base = envConfig.endPoint + "/user";
 
 const user = {
     login: base + "/login",
-    list: base + "/list"
+    list: base
 };
 
 export default user;

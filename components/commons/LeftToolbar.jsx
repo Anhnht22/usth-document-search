@@ -13,7 +13,8 @@ import clientRoutes from "@/routes/client";
 
 const menuItems = [
     {name: clientRoutes.home.title, icon: Home, href: clientRoutes.home.path},
-    {name: "Users", icon: Users, href: "/users"},
+    {name: clientRoutes.user.list.title, icon: Users, href: clientRoutes.user.list.path},
+    {name: clientRoutes.document.list.title, icon: Users, href: clientRoutes.document.list.path},
     {name: clientRoutes.department.list.title, icon: Building2, href: clientRoutes.department.list.path},
     {
         name: "Reports",

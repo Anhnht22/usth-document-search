@@ -4,7 +4,6 @@ import {
     Dialog,
     DialogContent,
     DialogDescription,
-    DialogFooter,
     DialogHeader,
     DialogTitle,
     DialogTrigger
@@ -12,9 +11,40 @@ import {
 import {Button} from "@/components/ui/button";
 import {Plus} from "lucide-react";
 import {useState} from "react";
+import {Form, FormControl, FormField, FormItem, FormLabel} from "@/components/ui/form";
+import {cn} from "@/lib/utils";
+import {Input} from "@/components/ui/input";
+import {useForm} from "react-hook-form";
+import {useCreateDepartment} from "@/hook/useDepartments";
+import {toast} from "react-toastify";
 
 const CreateDepartmentDialog = () => {
+    const form = useForm({
+        defaultValues: {
+            department_name: "",
+            description: ""
+        }
+    });
+
+    const {mutate: createDepartment, isPending: isPendingCreateDepartment} = useCreateDepartment();
+
     const [isOpen, setIsOpen] = useState(false);
+
+    const onSubmit = async (params) => {
+        createDepartment(params, {
+            onSuccess: (response) => {
+                const {returnMessage} = response;
+
+                form.reset();
+                toast.success(returnMessage);
+                setIsOpen(false);
+            },
+            onError: (error) => {
+                const {returnMessage} = error;
+                toast.error(returnMessage);
+            },
+        });
+    };
 
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -23,28 +53,48 @@ const CreateDepartmentDialog = () => {
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Edit profile</DialogTitle>
+                    <DialogTitle>Create</DialogTitle>
                     <DialogDescription>
-                        Make changes to your profile here. Click save when you're done.
+                        Create new department
                     </DialogDescription>
                 </DialogHeader>
-                {/*<div className="grid gap-4 py-4">*/}
-                {/*    <div className="grid grid-cols-4 items-center gap-4">*/}
-                {/*        <Label htmlFor="name" className="text-right">*/}
-                {/*            Name*/}
-                {/*        </Label>*/}
-                {/*        <Input id="name" value="Pedro Duarte" className="col-span-3"/>*/}
-                {/*    </div>*/}
-                {/*    <div className="grid grid-cols-4 items-center gap-4">*/}
-                {/*        <Label htmlFor="username" className="text-right">*/}
-                {/*            Username*/}
-                {/*        </Label>*/}
-                {/*        <Input id="username" value="@peduarte" className="col-span-3"/>*/}
-                {/*    </div>*/}
-                {/*</div>*/}
-                <DialogFooter>
-                    <Button type="submit">Save changes</Button>
-                </DialogFooter>
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)}>
+                        <div className="space-y-4">
+                            <FormField
+                                control={form.control}
+                                name="department_name"
+                                render={({field}) => (
+                                    <FormItem>
+                                        <FormLabel className={cn("font-bold")}>
+                                            Name <span className="text-red-500">*</span>
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="Name" {...field} />
+                                        </FormControl>
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="description"
+                                render={({field}) => (
+                                    <FormItem>
+                                        <FormLabel className={cn("font-bold")}>
+                                            Description <span className="text-red-500"> *</span>
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="Description" {...field} />
+                                        </FormControl>
+                                    </FormItem>
+                                )}
+                            />
+                            <div className={cn("flex justify-end")}>
+                                <Button type="submit">Save</Button>
+                            </div>
+                        </div>
+                    </form>
+                </Form>
             </DialogContent>
         </Dialog>
     )

@@ -7,8 +7,9 @@ const MainLayout = ({children}) => {
         <div className={cn("max-h-dvh max-w-dvh relative overflow-hidden")}>
             <Header/>
             <LeftToolbar/>
-            <main className={cn("mt-[calc(var(--header-height))] ml-[calc(var(--left-toolbar-width))] py-3 px-3",
-                "h-[calc(100dvh-var(--header-height))] transition-all duration-300 overflow-auto",
+            <main className={cn("mt-[calc(var(--header-height))] ml-[calc(var(--left-toolbar-width))]",
+                "h-[calc(100dvh-var(--header-height))]",
+                "transition-all duration-300 overflow-auto"
             )}>
                 {children}
             </main>

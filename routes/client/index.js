@@ -2,6 +2,7 @@ import user from "@/routes/client/user";
 import department from "@/routes/client/deparment";
 import error from "@/routes/client/error";
 import {rolesType} from "@/roles/constants";
+import document from "@/routes/client/document";
 
 const clientRoutes = {
     error: error,
@@ -11,7 +12,8 @@ const clientRoutes = {
         roles: [rolesType.admin, rolesType.professor, rolesType.student]
     },
     user: user,
-    department: department
+    department: department,
+    document: document,
 }
 
 export default clientRoutes;
