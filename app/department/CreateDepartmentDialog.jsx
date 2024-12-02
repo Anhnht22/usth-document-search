@@ -11,22 +11,34 @@ import {
 import {Button} from "@/components/ui/button";
 import {Plus} from "lucide-react";
 import {useState} from "react";
-import {Form, FormControl, FormField, FormItem, FormLabel} from "@/components/ui/form";
+import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 import {cn} from "@/lib/utils";
 import {Input} from "@/components/ui/input";
 import {useForm} from "react-hook-form";
 import {useCreateDepartment} from "@/hook/useDepartments";
 import {toast} from "react-toastify";
+import {z} from "zod";
+import {zodResolver} from "@hookform/resolvers/zod";
+
+const formSchema = z.object({
+    department_name: z.string().min(1, {
+        message: "Name is required!",
+    }),
+    description: z.string().min(1, {
+        message: "Description is required!",
+    }),
+})
 
 const CreateDepartmentDialog = () => {
     const form = useForm({
+        resolver: zodResolver(formSchema),
         defaultValues: {
             department_name: "",
             description: ""
         }
     });
 
-    const {mutate: createDepartment, isPending: isPendingCreateDepartment} = useCreateDepartment();
+    const {mutate: createDepartment, isPending} = useCreateDepartment();
 
     const [isOpen, setIsOpen] = useState(false);
 
@@ -66,12 +78,13 @@ const CreateDepartmentDialog = () => {
                                 name="department_name"
                                 render={({field}) => (
                                     <FormItem>
-                                        <FormLabel className={cn("font-bold")}>
+                                        <FormLabel className={cn("font-bold text-black")}>
                                             Name <span className="text-red-500">*</span>
                                         </FormLabel>
                                         <FormControl>
                                             <Input placeholder="Name" {...field} />
                                         </FormControl>
+                                        <FormMessage/>
                                     </FormItem>
                                 )}
                             />
@@ -80,17 +93,18 @@ const CreateDepartmentDialog = () => {
                                 name="description"
                                 render={({field}) => (
                                     <FormItem>
-                                        <FormLabel className={cn("font-bold")}>
+                                        <FormLabel className={cn("font-bold text-black")}>
                                             Description <span className="text-red-500"> *</span>
                                         </FormLabel>
                                         <FormControl>
                                             <Input placeholder="Description" {...field} />
                                         </FormControl>
+                                        <FormMessage/>
                                     </FormItem>
                                 )}
                             />
                             <div className={cn("flex justify-end")}>
-                                <Button type="submit">Save</Button>
+                                <Button disabled={isPending} type="submit">Save</Button>
                             </div>
                         </div>
                     </form>

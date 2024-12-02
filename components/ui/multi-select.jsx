@@ -51,6 +51,7 @@ export const MultiSelect = React.forwardRef(
             modalPopover = false,
             isMultiple = true,
             asChild = false,
+            isClearable = true,
             className,
             ...props
         },
@@ -185,13 +186,15 @@ export const MultiSelect = React.forwardRef(
                                     )}
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <XIcon
-                                        className="h-4 mx-2 cursor-pointer text-muted-foreground"
-                                        onClick={(event) => {
-                                            event.stopPropagation();
-                                            handleClear();
-                                        }}
-                                    />
+                                    {isClearable && (
+                                        <XIcon
+                                            className="h-4 mx-2 cursor-pointer text-muted-foreground"
+                                            onClick={(event) => {
+                                                event.stopPropagation();
+                                                handleClear();
+                                            }}
+                                        />
+                                    )}
                                     <Separator
                                         orientation="vertical"
                                         className="flex min-h-6 h-full"
@@ -232,6 +235,7 @@ export const MultiSelect = React.forwardRef(
                                     </CommandItem>
                                 )}
                                 {options.map((option) => {
+                                    console.log(selectedValues)
                                     const isSelected = selectedValues.includes(option.value);
                                     return (
                                         <CommandItem
