@@ -16,7 +16,7 @@ import {cn} from "@/lib/utils";
 import {Input} from "@/components/ui/input";
 import {useForm} from "react-hook-form";
 import {toast} from "react-toastify";
-import {useUser} from "@/hook/useUsers";
+import {useCreateUser} from "@/hook/useUsers";
 import {z} from "zod";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {Switch} from "@/components/ui/switch";
@@ -51,12 +51,12 @@ const CreateDialog = () => {
             username: "",
             password: "",
             email: "",
-            active: 1,
+            active: true,
             role_id: 3,
         }
     });
 
-    const {mutate: createUser, isPending} = useUser();
+    const {mutate: createUser, isPending} = useCreateUser();
     const {data: listRole} = useRole();
 
     const onSubmit = async (params) => {
@@ -172,8 +172,8 @@ const CreateDialog = () => {
                                                     "px-3 py-1 w-full"
                                                 )}
                                             >
-                                                <div className="">
-                                                    <FormLabel>Active</FormLabel>
+                                                <div>
+                                                    <FormLabel className="font-bold text-black">Active</FormLabel>
                                                 </div>
                                                 <div>
                                                     <FormControl>
@@ -193,13 +193,13 @@ const CreateDialog = () => {
                                     name="role_id"
                                     render={({field}) => (
                                         <FormItem>
-                                            <FormLabel className={cn("font-bold")}>Status</FormLabel>
+                                            <FormLabel className={cn("font-bold text-black")}>Status</FormLabel>
                                             <MultiSelect
                                                 isMultiple={false}
                                                 isClearable={false}
                                                 options={listRoleOptions}
-                                                onValueChange={field.onChange}
-                                                defaultValue={field.value}
+                                                onValueChange={(value) => field.onChange(value[0])}
+                                                defaultValue={[field.value]}
                                                 placeholder="Select role"
                                             />
                                         </FormItem>

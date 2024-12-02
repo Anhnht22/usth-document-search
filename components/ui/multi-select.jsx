@@ -235,7 +235,6 @@ export const MultiSelect = React.forwardRef(
                                     </CommandItem>
                                 )}
                                 {options.map((option) => {
-                                    console.log(selectedValues)
                                     const isSelected = selectedValues.includes(option.value);
                                     return (
                                         <CommandItem

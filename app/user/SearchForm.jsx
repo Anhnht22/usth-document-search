@@ -6,22 +6,25 @@ import {Input} from "@/components/ui/input";
 import {MultiSelect} from "@/components/ui/multi-select";
 import {listActiveOptions} from "@/utils/common";
 import {Button} from "@/components/ui/button";
-import {useEffect, useMemo, useState} from "react";
+import {useEffect, useMemo, useRef, useState} from "react";
 import {useForm, useWatch} from "react-hook-form";
-import {debounce} from "lodash";
+import {debounce, isEqual} from "lodash";
 import {useRole} from "@/hook/useRole";
 
-const SearchForm = ({onChangeFilter}) => {
+const defaultValues = {
+    username: "",
+    email: "",
+    role_name: [],
+    active: []
+}
 
+const SearchForm = ({onChangeFilter}) => {
     const form = useForm({
-        defaultValues: {
-            username: "",
-            email: "",
-            role_name: [],
-            active: []
-        }
+        defaultValues: defaultValues
     });
     const searchParams = useWatch({control: form.control});
+    // Lưu giá trị params trước đó
+    const previousParams = useRef(defaultValues);
 
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
     const [isHoveringSidebar, setIsHoveringSidebar] = useState(false);
@@ -31,7 +34,7 @@ const SearchForm = ({onChangeFilter}) => {
     const toggleSidebar = () => setIsSidebarVisible(prev => !prev)
 
     const onChangeFilterInternal = (params) => {
-        onChangeFilter(params);
+        onChangeFilter(compare);
     }
 
     const debouncedSetFilter = useMemo(
@@ -40,7 +43,10 @@ const SearchForm = ({onChangeFilter}) => {
     );
 
     useEffect(() => {
-        debouncedSetFilter(searchParams);
+        if (!isEqual(previousParams.current, searchParams)) {
+            debouncedSetFilter(searchParams);
+            previousParams.current = searchParams; // Cập nhật giá trị cũ
+        }
         return () => debouncedSetFilter.cancel(); // Hủy debounce khi component unmount
     }, [searchParams, debouncedSetFilter]);
 
@@ -61,7 +67,7 @@ const SearchForm = ({onChangeFilter}) => {
              onMouseEnter={() => setIsHoveringSidebar(true)}
              onMouseLeave={() => setIsHoveringSidebar(false)}>
             <Card className={cn(
-                "h-full flex flex-col rounded-none overflow-hidden",
+                "h-full flex flex-col rounded-none overflow-hidden overflow-y-auto",
                 "transition-all duration-300 ease-in-out",
                 isSidebarVisible ? "bg-white p-4" : "bg-gray-100"
             )}>
