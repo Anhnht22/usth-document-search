@@ -5,12 +5,11 @@ import {Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, Table
 import {cn} from "@/lib/utils";
 import {useDepartments} from "@/hook/useDepartments";
 import {CheckCircle2, EllipsisVertical, XCircle} from "lucide-react";
-import {useMemo, useState} from "react";
+import {useState} from "react";
 import {Button} from "@/components/ui/button";
 import {Typography} from "@/components/ui/typography";
 import {omit} from "lodash";
 import CreateDepartmentDialog from "@/app/department/CreateDepartmentDialog";
-import {v4} from "uuid";
 import {CustomPagination} from "@/components/commons/CustomPagination";
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu";
 import UpdateDepartmentDialog from "@/app/department/UpdateDepartmentDialog";
@@ -29,26 +28,14 @@ const Department = () => {
     const [isOpenDeactivateDialog, setIsOpenDeactivateDialog] = useState(false);
     const [isOpenDeleteDialog, setIsOpenDeleteDialog] = useState(false);
 
-    const {data: listDepartmentResp, isLoading, isFetching} = useDepartments({
+    const {data: listDepartmentResp} = useDepartments({
         limit: 20,
         page: page,
         order: JSON.stringify({"t.department_id": "desc"}),
         ...(filter.active === "all" ? omit(filter, "active") : filter)
     });
     const {data: listDepartment, total: totalDepartment} = listDepartmentResp || {};
-
-    const pagination = useMemo(() => {
-        if (!totalDepartment) return <></>;
-
-        const {total, limits, pages} = totalDepartment;
-        return <CustomPagination
-            key={v4()}
-            totalRecord={total}
-            perPage={limits}
-            page={pages}
-            onPageChange={setPage}
-        />
-    }, [totalDepartment]);
+    const {total, limits, pages} = totalDepartment || {};
 
     return (
         <MainLayout>
@@ -134,7 +121,12 @@ const Department = () => {
                         </Table>
                     </div>
                     <div>
-                        {pagination}
+                        {total ? <CustomPagination
+                            totalRecord={total}
+                            perPage={limits}
+                            page={pages}
+                            onPageChange={setPage}
+                        /> : null}
                     </div>
                 </div>
 

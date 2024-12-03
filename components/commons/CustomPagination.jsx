@@ -43,7 +43,11 @@ export function CustomPagination({totalPage, page, totalRecord, perPage, onPageC
     return (
         <Pagination className={cn("justify-end")}>
             <PaginationContent>
-                <PaginationItem className={cn(page === 1 ? "hover:cursor-not-allowed" : "hover:cursor-pointer")}>
+                <PaginationItem
+                    className={cn(
+                        page === 1 ? "hover:cursor-not-allowed" : "hover:cursor-pointer"
+                    )}
+                >
                     <PaginationPrevious
                         onClick={() => onPageChange(Math.max(1, page - 1))}
                         className={page === 1 ? 'pointer-events-none opacity-50' : ''}
@@ -78,13 +82,18 @@ export function CustomPagination({totalPage, page, totalRecord, perPage, onPageC
                             <PaginationEllipsis/>
                         </PaginationItem>
                         <PaginationItem className={cn("hover:cursor-pointer")}>
-                            <PaginationLink onClick={() => onPageChange(totalPage)}>{totalPage}</PaginationLink>
+                            <PaginationLink onClick={() => onPageChange(totalPage)}>
+                                {totalPage}
+                            </PaginationLink>
                         </PaginationItem>
                     </>
                 )}
 
                 <PaginationItem
-                    className={cn(page === totalPage ? "hover:cursor-not-allowed" : "hover:cursor-pointer")}>
+                    className={cn(
+                        page === totalPage ? "hover:cursor-not-allowed" : "hover:cursor-pointer"
+                    )}
+                >
                     <PaginationNext
                         onClick={() => onPageChange(Math.min(totalPage, page + 1))}
                         className={page === totalPage ? 'pointer-events-none opacity-50' : ''}

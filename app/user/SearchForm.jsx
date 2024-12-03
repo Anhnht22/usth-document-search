@@ -9,10 +9,12 @@ import {Button} from "@/components/ui/button";
 import {useEffect, useMemo, useRef, useState} from "react";
 import {useForm, useWatch} from "react-hook-form";
 import {debounce, isEqual} from "lodash";
+import {useRole} from "@/hook/useRole";
 
 const defaultValues = {
-    department_name: "",
-    description: "",
+    username: "",
+    email: "",
+    role_name: [],
     active: []
 }
 
@@ -27,12 +29,12 @@ const SearchForm = ({onChangeFilter}) => {
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
     const [isHoveringSidebar, setIsHoveringSidebar] = useState(false);
 
-    const toggleSidebar = () => {
-        setIsSidebarVisible(prev => !prev);
-    }
+    const {data: listRole} = useRole();
+
+    const toggleSidebar = () => setIsSidebarVisible(prev => !prev)
 
     const onChangeFilterInternal = (params) => {
-        onChangeFilter(params);
+        onChangeFilter(compare);
     }
 
     const debouncedSetFilter = useMemo(
@@ -48,23 +50,27 @@ const SearchForm = ({onChangeFilter}) => {
         return () => debouncedSetFilter.cancel(); // Hủy debounce khi component unmount
     }, [searchParams, debouncedSetFilter]);
 
+    const listRoleOptions = useMemo(
+        () => listRole?.map(({role_id, role_name}) => ({
+            value: role_id,
+            label: role_name
+        })) ?? [],
+        [listRole]
+    );
+
     return (
-        <div
-            className={cn(
-                "h-full relative",
-                "shrink-0 transition-all duration-300 ease-in-out",
-                isSidebarVisible ? "w-80" : "w-10"
-            )}
-            onMouseEnter={() => setIsHoveringSidebar(true)}
-            onMouseLeave={() => setIsHoveringSidebar(false)}
-        >
-            <Card
-                className={cn(
-                    "h-full flex flex-col rounded-none overflow-hidden overflow-y-auto",
-                    "transition-all duration-300 ease-in-out",
-                    isSidebarVisible ? "bg-white p-4" : "bg-gray-100"
-                )}
-            >
+        <div className={cn(
+            "h-full relative",
+            "shrink-0 transition-all duration-300 ease-in-out",
+            isSidebarVisible ? "w-80" : "w-10"
+        )}
+             onMouseEnter={() => setIsHoveringSidebar(true)}
+             onMouseLeave={() => setIsHoveringSidebar(false)}>
+            <Card className={cn(
+                "h-full flex flex-col rounded-none overflow-hidden overflow-y-auto",
+                "transition-all duration-300 ease-in-out",
+                isSidebarVisible ? "bg-white p-4" : "bg-gray-100"
+            )}>
                 <div onClick={toggleSidebar}
                      className={cn(
                          "hover:cursor-pointer flex justify-center border-0 shadow-none",
@@ -88,29 +94,44 @@ const SearchForm = ({onChangeFilter}) => {
                                 <div className="space-y-4">
                                     <FormField
                                         control={form.control}
-                                        name="department_name"
+                                        name="username"
                                         render={({field}) => (
                                             <FormItem>
                                                 <FormLabel className={cn("font-bold")}>
-                                                    Name
+                                                    Username
                                                 </FormLabel>
                                                 <FormControl>
-                                                    <Input placeholder="Department name..." {...field} />
+                                                    <Input placeholder="Username..." {...field} />
                                                 </FormControl>
                                             </FormItem>
                                         )}
                                     />
                                     <FormField
                                         control={form.control}
-                                        name="description"
+                                        name="email"
                                         render={({field}) => (
                                             <FormItem>
                                                 <FormLabel className={cn("font-bold")}>
-                                                    Description
+                                                    Email
                                                 </FormLabel>
                                                 <FormControl>
-                                                    <Input placeholder="Description..." {...field} />
+                                                    <Input placeholder="Email..." {...field} />
                                                 </FormControl>
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="role_name"
+                                        render={({field}) => (
+                                            <FormItem>
+                                                <FormLabel className={cn("font-bold")}>Status</FormLabel>
+                                                <MultiSelect
+                                                    options={listRoleOptions}
+                                                    onValueChange={field.onChange}
+                                                    defaultValue={field.value}
+                                                    placeholder="Select role"
+                                                />
                                             </FormItem>
                                         )}
                                     />
@@ -136,14 +157,12 @@ const SearchForm = ({onChangeFilter}) => {
                     </CardContent>
                 </div>
             </Card>
-            <Button
-                variant="secondary" onClick={toggleSidebar}
-                className={cn(
-                    "absolute bottom-3 border p-0 w-4 transition-opacity duration-300 ease-in-out",
-                    isSidebarVisible ? "" : "-rotate-180 -left-4",
-                    isHoveringSidebar ? "opacity-100" : "opacity-0"
-                )}
-            >
+            <Button variant="secondary" onClick={toggleSidebar}
+                    className={cn(
+                        "absolute bottom-3 border p-0 w-4 transition-opacity duration-300 ease-in-out",
+                        isSidebarVisible ? "" : "-rotate-180 -left-4",
+                        isHoveringSidebar ? "opacity-100" : "opacity-0"
+                    )}>
                 <ChevronRight/>
             </Button>
         </div>

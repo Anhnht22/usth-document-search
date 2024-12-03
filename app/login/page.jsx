@@ -13,11 +13,10 @@ import {zodResolver} from "@hookform/resolvers/zod";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 import {cn} from "@/lib/utils";
 import {EyeIcon, EyeOffIcon} from "lucide-react";
+import md5 from 'md5';
 
 const formSchema = z.object({
-    username: z.string({
-        required_error: "Username is requirssed!",
-    }).min(1, {
+    username: z.string().min(1, {
         message: "Username is required!",
     }),
     password: z.string().min(1, {
@@ -41,7 +40,10 @@ export default function LoginPage() {
     });
 
     const onSubmit = (data) => {
-        login(data, async (response, error) => {
+        login({
+            ...data,
+            password: md5(data.password)
+        }, async (response, error) => {
             if (error) {
                 form.setError("password", {message: "Wrong username or password!"});
             } else {
