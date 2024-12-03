@@ -9,12 +9,12 @@ import {
 import {cn} from "@/lib/utils";
 import {Button} from "@/components/ui/button";
 import {useUpdateDepartment} from "@/hook/useDepartments";
-import {useEffect} from "react";
+import {useEffect, useMemo} from "react";
 import {toast} from "react-toastify";
 import {v4} from "uuid";
 
 const DeactivateConfirmDialog = ({department, isOpen, onOpenChange}) => {
-    const {department_id, department_name, active} = department || {};
+    const {department_id, department_name, active} = useMemo(() => department || {}, [department]);
 
     const updateDepartmentMutation = useUpdateDepartment();
 
@@ -56,11 +56,11 @@ const DeactivateConfirmDialog = ({department, isOpen, onOpenChange}) => {
                     </DialogTitle>
                     <DialogDescription>
                         Are you sure you want to {active ? "deactivate" : "activate"}
-                        <span className={cn("font-extrabold")}> {department_name}</span>?
+                        <span className={cn("font-bold")}> {department_name}</span>?
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter>
-                    <Button variant="outline" onClick={() => onChange(false)}>
+                    <Button variant="outline" onClick={() => onOpenChange(false)}>
                         Hủy
                     </Button>
                     <Button

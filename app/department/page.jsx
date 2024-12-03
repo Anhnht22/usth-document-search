@@ -4,16 +4,16 @@ import MainLayout from "@/components/commons/MainLayout";
 import {Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
 import {cn} from "@/lib/utils";
 import {useDepartments} from "@/hook/useDepartments";
-import {CheckCircle2, EllipsisVertical, XCircle} from "lucide-react";
+import {CheckCircle2, EllipsisVertical, LockKeyhole, Pencil, Trash2, XCircle} from "lucide-react";
 import {useState} from "react";
 import {Button} from "@/components/ui/button";
 import {Typography} from "@/components/ui/typography";
 import {omit} from "lodash";
 import CreateDepartmentDialog from "@/app/department/CreateDepartmentDialog";
-import {CustomPagination} from "@/components/commons/CustomPagination";
+import {Pagination} from "@/components/ui-custom/Pagination";
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu";
 import UpdateDepartmentDialog from "@/app/department/UpdateDepartmentDialog";
-import SearchForm from "@/app/department/SearchForm";
+import DepartmentSearchForm from "@/app/department/DepartmentSearchForm";
 import DeactivateConfirmDialog from "@/app/department/DeactivateConfirmDialog";
 import DeleteDepartmentDialog from "@/app/department/DeleteDepartmentDialog";
 
@@ -88,28 +88,28 @@ const Department = () => {
                                                             className={cn("hover:cursor-pointer")}
                                                             onClick={() => {
                                                                 setSelectedItem(department);
-                                                                setIsOpenDeactivateDialog(true)
-                                                            }}
-                                                        >
-                                                            {active ? "Deactivate" : "Activate"}
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem
-                                                            className={cn("hover:cursor-pointer")}
-                                                            onClick={() => {
-                                                                setSelectedItem(department);
-                                                                setIsOpenDeletePermanentlyDialog(true)
-                                                            }}
-                                                        >
-                                                            Delete
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem
-                                                            className={cn("hover:cursor-pointer")}
-                                                            onClick={() => {
-                                                                setSelectedItem(department);
                                                                 setIsOpenUpdateDialog(true)
                                                             }}
                                                         >
-                                                            Update
+                                                            <Pencil/> Update
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem
+                                                            className={cn("hover:cursor-pointer")}
+                                                            onClick={() => {
+                                                                setSelectedItem(department);
+                                                                setIsOpenDeactivateDialog(true)
+                                                            }}
+                                                        >
+                                                            <LockKeyhole/> {active ? "Deactivate" : "Activate"}
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem
+                                                            className={cn("hover:cursor-pointer")}
+                                                            onClick={() => {
+                                                                setSelectedItem(department);
+                                                                setIsOpenDeleteDialog(true)
+                                                            }}
+                                                        >
+                                                            <Trash2/> Delete
                                                         </DropdownMenuItem>
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
@@ -121,7 +121,7 @@ const Department = () => {
                         </Table>
                     </div>
                     <div>
-                        {total ? <CustomPagination
+                        {total ? <Pagination
                             totalRecord={total}
                             perPage={limits}
                             page={pages}
@@ -130,7 +130,7 @@ const Department = () => {
                     </div>
                 </div>
 
-                <SearchForm onChangeFilter={setFilter}/>
+                <DepartmentSearchForm onChangeFilter={setFilter}/>
             </div>
 
             <UpdateDepartmentDialog
