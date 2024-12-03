@@ -1,7 +1,7 @@
 import {cn} from "@/lib/utils";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {ChevronRight, Filter} from "lucide-react";
-import {Form, FormControl, FormField, FormItem, FormLabel} from "@/components/ui/form";
+import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 import {Input} from "@/components/ui/input";
 import {MultiSelect} from "@/components/ui/multi-select";
 import {listActiveOptions} from "@/utils/common";
@@ -9,13 +9,16 @@ import {Button} from "@/components/ui/button";
 import {useEffect, useMemo, useRef, useState} from "react";
 import {useForm, useWatch} from "react-hook-form";
 import {debounce, isEqual} from "lodash";
-import {useRole} from "@/hook/useRole";
+import {useTopic} from "@/hook/useTopic";
+import DateRangePicker from "@/components/ui-custom/DateRangePicker";
 
 const defaultValues = {
-    username: "",
-    email: "",
-    role_id: [],
-    active: []
+    topic_id: [],
+    title: "",
+    description: "",
+    created_by: [],
+    created_date: "",
+    active: [],
 }
 
 const UserSearchForm = ({onChangeFilter}) => {
@@ -23,15 +26,24 @@ const UserSearchForm = ({onChangeFilter}) => {
         defaultValues: defaultValues
     });
     const searchParams = useWatch({control: form.control});
+    console.log(searchParams)
     // Lưu giá trị params trước đó
     const previousParams = useRef(defaultValues);
 
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
     const [isHoveringSidebar, setIsHoveringSidebar] = useState(false);
 
-    const {data: listRole} = useRole();
+    const toggleSidebar = () => setIsSidebarVisible(prev => !prev);
 
-    const toggleSidebar = () => setIsSidebarVisible(prev => !prev)
+    const {data: topicResp} = useTopic();
+
+    const listTopicOptions = useMemo(
+        () => topicResp?.data?.map(({topic_id, topic_name}) => ({
+            value: topic_id,
+            label: topic_name
+        })) ?? [],
+        [topicResp]
+    );
 
     const onChangeFilterInternal = (params) => {
         onChangeFilter(params);
@@ -44,19 +56,22 @@ const UserSearchForm = ({onChangeFilter}) => {
 
     useEffect(() => {
         if (!isEqual(previousParams.current, searchParams)) {
-            debouncedSetFilter(searchParams);
+            const {created_date, ...params} = searchParams
+
+            const filterParams = params;
+            if (created_date?.startDate)
+                filterParams.from_upload_date = Math.floor(new Date(created_date.startDate).getTime())
+            if (created_date?.endDate)
+                filterParams.to_upload_date = Math.floor(new Date(created_date.endDate).getTime())
+
+            debouncedSetFilter(filterParams);
+
             previousParams.current = searchParams; // Cập nhật giá trị cũ
         }
         return () => debouncedSetFilter.cancel(); // Hủy debounce khi component unmount
     }, [searchParams, debouncedSetFilter]);
 
-    const listRoleOptions = useMemo(
-        () => listRole?.data?.map(({role_id, role_name}) => ({
-            value: role_id,
-            label: role_name
-        })) ?? [],
-        [listRole]
-    );
+    const [date, setDate] = useState()
 
     return (
         <div className={cn(
@@ -94,44 +109,58 @@ const UserSearchForm = ({onChangeFilter}) => {
                                 <div className="space-y-4">
                                     <FormField
                                         control={form.control}
-                                        name="username"
+                                        name="topic_id"
                                         render={({field}) => (
                                             <FormItem>
-                                                <FormLabel className={cn("font-bold")}>
-                                                    Username
+                                                <FormLabel className={cn("font-bold text-black")}>
+                                                    Topic
                                                 </FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="Username..." {...field} />
-                                                </FormControl>
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name="email"
-                                        render={({field}) => (
-                                            <FormItem>
-                                                <FormLabel className={cn("font-bold")}>
-                                                    Email
-                                                </FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="Email..." {...field} />
-                                                </FormControl>
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name="role_id"
-                                        render={({field}) => (
-                                            <FormItem>
-                                                <FormLabel className={cn("font-bold")}>Status</FormLabel>
                                                 <MultiSelect
-                                                    options={listRoleOptions}
-                                                    onValueChange={field.onChange}
+                                                    isClearable={true}
+                                                    options={listTopicOptions}
+                                                    onValueChange={(value) => field.onChange(value)}
                                                     defaultValue={field.value}
-                                                    placeholder="Select role"
+                                                    placeholder="Select topic"
                                                 />
+                                                <FormMessage/>
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="title"
+                                        render={({field}) => (
+                                            <FormItem>
+                                                <FormLabel className={cn("font-bold")}>
+                                                    Title
+                                                </FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="Title..." {...field} />
+                                                </FormControl>
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="description"
+                                        render={({field}) => (
+                                            <FormItem>
+                                                <FormLabel className={cn("font-bold")}>
+                                                    Description
+                                                </FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="Description..." {...field} />
+                                                </FormControl>
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="created_date"
+                                        render={({field}) => (
+                                            <FormItem>
+                                                <FormLabel className={cn("font-bold")}>Created date</FormLabel>
+                                                <DateRangePicker onChange={field.onChange}/>
                                             </FormItem>
                                         )}
                                     />

@@ -51,7 +51,7 @@ const SearchForm = ({onChangeFilter}) => {
     }, [searchParams, debouncedSetFilter]);
 
     const listRoleOptions = useMemo(
-        () => listRole?.map(({role_id, role_name}) => ({
+        () => listRole?.data?.map(({role_id, role_name}) => ({
             value: role_id,
             label: role_name
         })) ?? [],

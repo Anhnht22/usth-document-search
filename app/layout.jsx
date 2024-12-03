@@ -1,5 +1,8 @@
-import "./globals.scss";
 import 'react-toastify/dist/ReactToastify.css';
+import 'react-date-range/dist/styles.css';
+import 'react-date-range/dist/theme/default.css';
+import "./globals.scss";
+
 import {Roboto} from "next/font/google";
 import QueryProvider from "@/components/tanstack/QueryProvider";
 import {AuthProvider} from "@/provider/AuthProvider";

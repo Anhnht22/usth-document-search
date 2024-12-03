@@ -1,5 +1,5 @@
 import {
-    Pagination,
+    Pagination as PaginationUI,
     PaginationContent,
     PaginationEllipsis,
     PaginationItem,
@@ -19,7 +19,7 @@ import {cn} from "@/lib/utils";
  * @returns {JSX.Element}
  * @constructor
  */
-export function CustomPagination({totalPage, page, totalRecord, perPage, onPageChange}) {
+export function Pagination({totalPage, page, totalRecord, perPage, onPageChange}) {
     totalPage = totalPage ? totalPage : Math.ceil(totalRecord / perPage);
 
     const getPageNumbers = () => {
@@ -41,7 +41,7 @@ export function CustomPagination({totalPage, page, totalRecord, perPage, onPageC
     const pageNumbers = getPageNumbers();
 
     return (
-        <Pagination className={cn("justify-end")}>
+        <PaginationUI className={cn("justify-end")}>
             <PaginationContent>
                 <PaginationItem
                     className={cn(
@@ -101,7 +101,7 @@ export function CustomPagination({totalPage, page, totalRecord, perPage, onPageC
                 </PaginationItem>
 
             </PaginationContent>
-        </Pagination>
+        </PaginationUI>
     )
 }
 

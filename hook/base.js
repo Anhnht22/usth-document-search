@@ -46,14 +46,20 @@ class ApiBase {
 
         // Xử lý headers
         const headers = {
-            'Content-Type': 'application/json',
             ...(authToken && {'Authorization': `${authToken}`}),
         };
+
+        // Bỏ qua Content-Type nếu data là FormData
+        if (!(data instanceof FormData)) {
+            headers['Content-Type'] = 'application/json';
+        }
+
+        const body = data instanceof FormData ? data : JSON.stringify(data);
 
         return fetch(uri, {
             method: method,
             headers: headers,
-            ...(method !== "GET" && data ? {body: JSON.stringify(data)} : {}),
+            ...(method !== "GET" && data ? {body: body} : {}),
             ...options, // Gộp thêm các option bổ sung nếu cần
         }).then(async (response) => {
             if (!response.ok) {

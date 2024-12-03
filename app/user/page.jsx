@@ -8,7 +8,7 @@ import {CheckCircle2, EllipsisVertical, LockKeyhole, Pencil, Trash2, XCircle} fr
 import {useEffect, useState} from "react";
 import {omit} from "lodash";
 import {useUser} from "@/hook/useUsers";
-import {CustomPagination} from "@/components/commons/CustomPagination";
+import {Pagination} from "@/components/ui-custom/Pagination";
 import UserSearchForm from "@/app/user/UserSearchForm";
 import {useRole} from "@/hook/useRole";
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu";
@@ -75,7 +75,7 @@ const ListUser = () => {
                                             <TableCell>{user_id}</TableCell>
                                             <TableCell>{username}</TableCell>
                                             <TableCell>{email}</TableCell>
-                                            <TableCell>{listRole?.find(({role_id: roleId}) => roleId === role_id)?.role_name}</TableCell>
+                                            <TableCell>{listRole?.data?.find(({role_id: roleId}) => roleId === role_id)?.role_name}</TableCell>
                                             <TableCell>
                                                 <div className={cn("flex justify-center")}>
                                                     {active
@@ -130,7 +130,7 @@ const ListUser = () => {
                         </Table>
                     </div>
                     <div>
-                        {total ? <CustomPagination
+                        {total ? <Pagination
                             totalRecord={total}
                             perPage={limits}
                             page={pages}

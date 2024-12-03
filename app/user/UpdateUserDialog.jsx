@@ -51,13 +51,13 @@ const UpdateUserDialog = ({selectedItem, isOpen, onOpenChange}) => {
     useEffect(() => {
         if (selectedItem) {
             Object.entries(selectedItem)?.forEach(([key, value]) => {
-                form.setValue(key, value);
+                if (key !== "role_name") form.setValue(key, value);
             })
         }
     }, [selectedItem]);
 
     const listRoleOptions = useMemo(
-        () => listRole?.map(({role_id, role_name}) => ({
+        () => listRole?.data?.map(({role_id, role_name}) => ({
             value: role_id,
             label: role_name
         })) ?? [],

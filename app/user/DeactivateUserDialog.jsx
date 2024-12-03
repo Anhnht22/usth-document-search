@@ -21,10 +21,7 @@ const DeactivateUserDialog = ({selectedItem, isOpen, onOpenChange}) => {
     const updateDepartment = (id, updateItem, params) => {
         updateDepartmentMutation.mutate({
             id: id,
-            params: {
-                ...updateItem,
-                ...params,
-            }
+            params: params
         });
     }
 
@@ -56,7 +53,7 @@ const DeactivateUserDialog = ({selectedItem, isOpen, onOpenChange}) => {
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter>
-                    <Button variant="outline" onClick={() => onChange(false)}>
+                    <Button variant="outline" onClick={() => onOpenChange(false)}>
                         Hủy
                     </Button>
                     <Button

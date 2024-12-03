@@ -76,7 +76,7 @@ const CreateUserDialog = () => {
     };
 
     const listRoleOptions = useMemo(
-        () => listRole?.map(({role_id, role_name}) => ({
+        () => listRole?.data?.map(({role_id, role_name}) => ({
             value: role_id,
             label: role_name
         })) ?? [],

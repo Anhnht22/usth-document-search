@@ -6,8 +6,7 @@ const queryKeyRole = "role";
 
 const fetchRole = async (params) => {
     const response = await new ApiBase().httpGet(apiRoutes.role.list, params);
-    const data = await response.json();
-    return data.data;
+    return await response.json();
 }
 
 const useRole = (params) => {
