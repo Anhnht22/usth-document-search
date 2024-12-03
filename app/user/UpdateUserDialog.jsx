@@ -30,23 +30,25 @@ const UpdateUserDialog = ({selectedItem, isOpen, onOpenChange}) => {
     const {data: listRole} = useRole();
 
     const onSubmit = useCallback(async (params) => {
-        updateUserMutation.mutate({id: user_id, params});
-    }, [user_id]);
-
-    useEffect(() => {
-        if (updateUserMutation.data) {
-            const {returnCode} = updateUserMutation.data
-            if (returnCode === 200) {
-                onOpenChange(false);
-                toast.success(
-                    <div key={v4()}>
-                        Delete permanently user <b>{username}</b> successfully
-                    </div>
-                );
-                updateUserMutation.reset();
+        updateUserMutation.mutate({id: user_id, params}, {
+            onSuccess: (response) => {
+                const {returnCode} = response
+                if (returnCode === 200) {
+                    onOpenChange(false);
+                    toast.success(
+                        <div key={v4()}>
+                            Update user <b>{username}</b> successfully
+                        </div>
+                    );
+                    updateUserMutation.reset();
+                }
+            },
+            onError: (error) => {
+                const {returnMessage} = error;
+                toast.error(returnMessage);
             }
-        }
-    }, [updateUserMutation.data]);
+        });
+    }, [user_id]);
 
     useEffect(() => {
         if (selectedItem) {

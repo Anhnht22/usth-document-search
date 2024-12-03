@@ -32,7 +32,7 @@ export function FileUpload({limit = 1, onFilesChange}) {
             {files.length > 0 && (
                 <ul className="mt-2 space-y-2">
                     {files.map((file) => (
-                        <li key={file.name} className="flex items-center justify-between p-2 pr-8 bg-muted rounded-md">
+                        <li key={file.name} className="flex items-center justify-between p-2 pr-8 bg-muted rounded-md relative">
                             <div className="flex items-center flex-grow w-full">
                                 <File className="h-5 w-5 mr-2 text-muted-foreground"/>
                                 <span className="text-sm truncate block w-full whitespace-nowrap text-ellipsis">{file.name}</span>
@@ -42,6 +42,7 @@ export function FileUpload({limit = 1, onFilesChange}) {
                                 variant="ghost"
                                 size="icon"
                                 onClick={() => removeFile(file)}
+                                className={cn("absolute right-0")}
                             >
                                 <X className="h-4 w-4"/>
                                 <span className="sr-only">Delete file</span>

@@ -4,7 +4,7 @@ import MainLayout from "@/components/commons/MainLayout";
 import {cn} from "@/lib/utils";
 import {Typography} from "@/components/ui/typography";
 import {Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
-import {CheckCircle2, ExternalLink, XCircle} from "lucide-react";
+import {CheckCircle2, EllipsisVertical, ExternalLink, LockKeyhole, Pencil, Trash2, XCircle} from "lucide-react";
 import {Pagination} from "@/components/ui-custom/Pagination";
 import {useEffect, useState} from "react";
 import {useDocument} from "@/hook/useDocument";
@@ -12,6 +12,11 @@ import {convertUnixDate, ddMMyyyy} from "@/utils/common";
 import DocumentSearchForm from "@/app/document/DocumentSearchForm";
 import CreateDocumentDialog from "@/app/document/CreateDocumentDialog";
 import envConfig from "@/utils/envConfig";
+import UpdateDocumentDialog from "@/app/document/UpdateDocumentDialog";
+import DeactivateDocumentDialog from "@/app/document/DeactivateDocumentDialog";
+import DeleteDocumentDialog from "@/app/document/DeleteDocumentDialog";
+import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu";
+import {Button} from "@/components/ui/button";
 
 const Document = () => {
     const [page, setPage] = useState(1);
@@ -94,6 +99,45 @@ const Document = () => {
                                                     )}
                                                 </div>
                                             </TableCell>
+                                            <TableCell>
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="ghost" className="h-8 w-8 p-0">
+                                                            <span className="sr-only">Open menu</span>
+                                                            <EllipsisVertical className="h-4 w-4"/>
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        <DropdownMenuItem
+                                                            className={cn("hover:cursor-pointer")}
+                                                            onClick={() => {
+                                                                setSelectedItem(item);
+                                                                setIsOpenUpdateDialog(true)
+                                                            }}
+                                                        >
+                                                            <Pencil/> Update
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem
+                                                            className={cn("hover:cursor-pointer")}
+                                                            onClick={() => {
+                                                                setSelectedItem(item);
+                                                                setIsOpenDeactivateDialog(true)
+                                                            }}
+                                                        >
+                                                            <LockKeyhole/> {document_active ? "Deactivate" : "Activate"}
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem
+                                                            className={cn("hover:cursor-pointer")}
+                                                            onClick={() => {
+                                                                setSelectedItem(item);
+                                                                setIsOpenDeleteDialog(true)
+                                                            }}
+                                                        >
+                                                            <Trash2/> Delete
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            </TableCell>
                                         </TableRow>
                                     )
                                 })}
@@ -113,6 +157,23 @@ const Document = () => {
                 <DocumentSearchForm onChangeFilter={setFilter}/>
             </div>
 
+            <UpdateDocumentDialog
+                selectedItem={selectedItem}
+                isOpen={isOpenUpdateDialog}
+                onOpenChange={setIsOpenUpdateDialog}
+            />
+
+            <DeactivateDocumentDialog
+                selectedItem={selectedItem}
+                isOpen={isOpenDeactivateDialog}
+                onOpenChange={setIsOpenDeactivateDialog}
+            />
+
+            <DeleteDocumentDialog
+                selectedItem={selectedItem}
+                isOpen={isOpenDeleteDialog}
+                onOpenChange={setIsOpenDeleteDialog}
+            />
         </MainLayout>
     );
 }

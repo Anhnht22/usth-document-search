@@ -36,7 +36,7 @@ const UpdateDepartmentDialog = ({departmentItem, isOpen, onOpenChange}) => {
                 onOpenChange(false);
                 toast.success(
                     <div key={v4()}>
-                        Delete permanently department <b>{department_name}</b> successfully
+                        Update department <b>{department_name}</b> successfully
                     </div>
                 );
                 updateDepartmentMutation.reset();

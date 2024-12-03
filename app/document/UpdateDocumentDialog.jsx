@@ -1,27 +1,21 @@
 "use client"
 
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger
-} from "@/components/ui/dialog";
+import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from "@/components/ui/dialog";
 import {Button} from "@/components/ui/button";
-import {Plus} from "lucide-react";
-import {useMemo, useState} from "react";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 import {cn} from "@/lib/utils";
 import {Input} from "@/components/ui/input";
 import {useForm} from "react-hook-form";
+import {useCallback, useEffect, useMemo} from "react";
+import {MultiSelect} from "@/components/ui/multi-select";
 import {toast} from "react-toastify";
+import {v4} from "uuid";
+import {useUpdateDocument} from "@/hook/useDocument";
 import {z} from "zod";
 import {zodResolver} from "@hookform/resolvers/zod";
-import {useTopic} from "@/hook/useTopic";
-import {MultiSelect} from "@/components/ui/multi-select";
 import {FileUpload} from "@/components/ui-custom/FileUpload";
-import {useCreateDocument} from "@/hook/useDocument";
+import {useTopic} from "@/hook/useTopic";
+import {File} from "lucide-react";
 
 const formSchema = z.object({
     title: z.string().min(1, {
@@ -33,26 +27,35 @@ const formSchema = z.object({
     topic_id: z.number().min(1, {
         message: "Topic is required!",
     }),
-    file: z.any().refine((file) => file instanceof File, {
-        message: "File is required!",
-    }),
+    file_new: z.any()
 })
 
-const CreateDocumentDialog = () => {
+const UpdateUserDialog = ({selectedItem, isOpen, onOpenChange}) => {
+    /*{
+        "document_id": 1,
+        "file_path": "document/1733222886694-319333330-glowing-golden.png",
+        "title": "Program File Demo",
+        "description": "Program File Demo",
+        "upload_date": 1733233654631,
+        "document_active": 0,
+        "username": "admin",
+        "topic_name": "Program 1",
+        "topic_id": 1
+    }*/
+    const {document_id, title, file_path} = selectedItem || {};
+
     const form = useForm({
         resolver: zodResolver(formSchema),
         defaultValues: {
             title: "",
             description: "",
             topic_id: "",
-            file: null
+            file_new: null
         }
     });
 
-    const {mutate: createDocument, isPending} = useCreateDocument();
-    const {data: topicResp} = useTopic({
-        active: 1
-    });
+    const updateDocumentMutation = useUpdateDocument();
+    const {data: topicResp} = useTopic({active: 1});
 
     const listTopicOptions = useMemo(
         () => topicResp?.data?.map(({topic_id, topic_name}) => ({
@@ -62,43 +65,54 @@ const CreateDocumentDialog = () => {
         [topicResp]
     );
 
-    const [isOpen, setIsOpen] = useState(false);
-
-    const onSubmit = async (params) => {
+    const onSubmit = useCallback(async (params) => {
         const formData = new FormData();
         formData.append("folder", "document");
         Object.keys(params).forEach((key) => {
-            if (key === "file") {
-                formData.append("file", params.file); // File duy nhất
+            if (key === "file_new") {
+                if (params.file_new !== null)
+                    formData.append("file", params.file_new); // File duy nhất
             } else {
                 formData.append(key, params[key]);
             }
         });
 
-        createDocument(formData, {
+        updateDocumentMutation.mutate({id: document_id, params: formData}, {
             onSuccess: (response) => {
-                const {returnMessage} = response;
-                form.reset();
-                toast.success(returnMessage);
-                setIsOpen(false);
+                const {returnCode} = response
+                if (returnCode === 200) {
+                    onOpenChange(false);
+                    toast.success(
+                        <div key={v4()}>
+                            Update document <b>{title}</b> successfully
+                        </div>
+                    );
+                    updateDocumentMutation.reset();
+                }
             },
             onError: (error) => {
                 const {returnMessage} = error;
                 toast.error(returnMessage);
-            },
+            }
         });
-    };
+    }, [document_id]);
+
+    useEffect(() => {
+        if (selectedItem) {
+            const {title, description, topic_id} = selectedItem;
+            form.setValue("title", title)
+            form.setValue("description", description)
+            form.setValue("topic_id", topic_id)
+        }
+    }, [selectedItem]);
 
     return (
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogTrigger asChild>
-                <Button><Plus/> Create</Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[525px] overflow-y-auto max-h-screen">
+        <Dialog open={isOpen} onOpenChange={onOpenChange}>
+            <DialogContent className="sm:max-w-[425px] overflow-y-auto max-h-screen">
                 <DialogHeader>
-                    <DialogTitle>Create</DialogTitle>
+                    <DialogTitle>Update</DialogTitle>
                     <DialogDescription>
-                        Create new document
+                        Update a department
                     </DialogDescription>
                 </DialogHeader>
                 <Form {...form}>
@@ -157,10 +171,29 @@ const CreateDocumentDialog = () => {
                                 />
                                 <FormField
                                     control={form.control}
-                                    name="file"
+                                    name="file_new"
                                     render={({field}) => (
                                         <FormItem>
                                             <FormLabel className={cn("font-bold text-black")}>Files</FormLabel>
+                                            {isOpen && !field.value && (
+                                                <ul key={v4()} className="mt-2 space-y-2">
+                                                    {[file_path].map((file) => (
+                                                        <li key={file}
+                                                            className="flex items-center justify-between p-2 bg-muted rounded-md">
+                                                            <div className="flex items-center flex-grow w-full">
+                                                                <div>
+                                                                    <File
+                                                                        className="h-5 w-5 mr-2 text-muted-foreground"/>
+                                                                </div>
+                                                                <span className={cn(
+                                                                    "text-sm block w-full",
+                                                                    "whitespace-nowrap text-ellipsis truncate"
+                                                                )}>{file}</span>
+                                                            </div>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            )}
                                             <FileUpload
                                                 limit={1}
                                                 onFilesChange={(files) => field.onChange(files[0] || null)}
@@ -171,7 +204,7 @@ const CreateDocumentDialog = () => {
                                 />
                             </div>
                             <div className={cn("flex justify-end")}>
-                                <Button disabled={isPending} type="submit">Save</Button>
+                                <Button disabled={updateDocumentMutation.isPending} type="submit">Save</Button>
                             </div>
                         </div>
                     </form>
@@ -181,4 +214,4 @@ const CreateDocumentDialog = () => {
     )
 }
 
-export default CreateDocumentDialog;
+export default UpdateUserDialog;

@@ -26,7 +26,6 @@ const UserSearchForm = ({onChangeFilter}) => {
         defaultValues: defaultValues
     });
     const searchParams = useWatch({control: form.control});
-    console.log(searchParams)
     // Lưu giá trị params trước đó
     const previousParams = useRef(defaultValues);
 
