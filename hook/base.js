@@ -1,11 +1,5 @@
 import envConfig from "@/utils/envConfig";
-
-function getCookie(name) {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop().split(';').shift();
-    return null;
-}
+import {getCookie} from "@/utils/common";
 
 /**
  * https://tanstack.com/query/latest/docs/framework/react/examples/nextjs

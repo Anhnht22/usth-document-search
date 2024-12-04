@@ -7,18 +7,27 @@ import {Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, Table
 import {CheckCircle2, EllipsisVertical, ExternalLink, LockKeyhole, Pencil, Trash2, XCircle} from "lucide-react";
 import {Pagination} from "@/components/ui-custom/Pagination";
 import {useEffect, useState} from "react";
-import {useDocument} from "@/hook/useDocument";
+import {useDocument, useUpdateDocument} from "@/hook/useDocument";
 import {convertUnixDate, ddMMyyyy} from "@/utils/common";
 import DocumentSearchForm from "@/app/document/DocumentSearchForm";
-import CreateDocumentDialog from "@/app/document/CreateDocumentDialog";
 import envConfig from "@/utils/envConfig";
 import UpdateDocumentDialog from "@/app/document/UpdateDocumentDialog";
 import DeactivateDocumentDialog from "@/app/document/DeactivateDocumentDialog";
 import DeleteDocumentDialog from "@/app/document/DeleteDocumentDialog";
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu";
 import {Button} from "@/components/ui/button";
+import {useAuth} from "@/provider/AuthProvider";
+import {omit} from "lodash";
+import {actions, rolesGroup} from "@/roles/constants";
+import CreateDocumentDialog from "@/app/document/CreateDocumentDialog";
+import roles from "@/roles";
+import StatusDocumentUpdate from "@/app/document/StatusDocumentUpdate";
+
+const rolesFunction = rolesGroup.document;
 
 const Document = () => {
+    const {role} = useAuth();
+
     const [page, setPage] = useState(1);
 
     const [filter, setFilter] = useState({});
@@ -43,14 +52,14 @@ const Document = () => {
         }
     }, [isOpenUpdateDialog, isOpenDeactivateDialog, isOpenDeleteDialog]);
 
-    return (
+    return role && (
         <MainLayout>
             <div className={cn("flex gap-3 h-full")}>
                 <div className="flex-1 py-3 pl-3 flex flex-col h-full">
                     <div className={cn("flex justify-between")}>
                         <Typography variant="h2" className={cn("mb-4")}>Department</Typography>
                         <div className={cn("space-x-3")}>
-                            <CreateDocumentDialog/>
+                            {roles[rolesFunction][role].includes(actions.create) && <CreateDocumentDialog/>}
                         </div>
                     </div>
                     <div className={cn("flex-1 overflow-auto")}>
@@ -65,6 +74,7 @@ const Document = () => {
                                     <TableHead className={cn("min-w-[300px]")}>File path</TableHead>
                                     <TableHead className={cn("min-w-36")}>Created by</TableHead>
                                     <TableHead className={cn("w-60")}>Created date</TableHead>
+                                    <TableHead className={cn("w-60 text-center")}>Document status</TableHead>
                                     <TableHead className={cn("w-32 text-center")}>Status</TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -72,7 +82,7 @@ const Document = () => {
                                 {listData?.map((item) => {
                                     const {
                                         document_id, file_path, title, description, upload_date,
-                                        document_active, username, topic_name
+                                        document_active, username, topic_name, status
                                     } = item;
                                     const uploadString = convertUnixDate(upload_date / 1000, ddMMyyyy);
 
@@ -90,6 +100,9 @@ const Document = () => {
                                             </TableCell>
                                             <TableCell>{username}</TableCell>
                                             <TableCell>{uploadString}</TableCell>
+                                            <TableCell className={cn("w-64 text-center")}>
+                                                <StatusDocumentUpdate selectedItem={item}/>
+                                            </TableCell>
                                             <TableCell>
                                                 <div className={cn("flex justify-center")}>
                                                     {document_active ? (
@@ -99,45 +112,47 @@ const Document = () => {
                                                     )}
                                                 </div>
                                             </TableCell>
-                                            <TableCell>
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button variant="ghost" className="h-8 w-8 p-0">
-                                                            <span className="sr-only">Open menu</span>
-                                                            <EllipsisVertical className="h-4 w-4"/>
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        <DropdownMenuItem
-                                                            className={cn("hover:cursor-pointer")}
-                                                            onClick={() => {
-                                                                setSelectedItem(item);
-                                                                setIsOpenUpdateDialog(true)
-                                                            }}
-                                                        >
-                                                            <Pencil/> Update
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem
-                                                            className={cn("hover:cursor-pointer")}
-                                                            onClick={() => {
-                                                                setSelectedItem(item);
-                                                                setIsOpenDeactivateDialog(true)
-                                                            }}
-                                                        >
-                                                            <LockKeyhole/> {document_active ? "Deactivate" : "Activate"}
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem
-                                                            className={cn("hover:cursor-pointer")}
-                                                            onClick={() => {
-                                                                setSelectedItem(item);
-                                                                setIsOpenDeleteDialog(true)
-                                                            }}
-                                                        >
-                                                            <Trash2/> Delete
-                                                        </DropdownMenuItem>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </TableCell>
+                                            {roles[rolesFunction][role].includes(actions.update) && (
+                                                <TableCell>
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button variant="ghost" className="h-8 w-8 p-0">
+                                                                <span className="sr-only">Open menu</span>
+                                                                <EllipsisVertical className="h-4 w-4"/>
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end">
+                                                            <DropdownMenuItem
+                                                                className={cn("hover:cursor-pointer")}
+                                                                onClick={() => {
+                                                                    setSelectedItem(item);
+                                                                    setIsOpenUpdateDialog(true)
+                                                                }}
+                                                            >
+                                                                <Pencil/> Update
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem
+                                                                className={cn("hover:cursor-pointer")}
+                                                                onClick={() => {
+                                                                    setSelectedItem(item);
+                                                                    setIsOpenDeactivateDialog(true)
+                                                                }}
+                                                            >
+                                                                <LockKeyhole/> {document_active ? "Deactivate" : "Activate"}
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem
+                                                                className={cn("hover:cursor-pointer")}
+                                                                onClick={() => {
+                                                                    setSelectedItem(item);
+                                                                    setIsOpenDeleteDialog(true)
+                                                                }}
+                                                            >
+                                                                <Trash2/> Delete
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                </TableCell>
+                                            )}
                                         </TableRow>
                                     )
                                 })}

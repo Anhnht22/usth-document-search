@@ -20,7 +20,8 @@ const DeactivateUserDialog = ({selectedItem, isOpen, onOpenChange}) => {
 
     const updateDepartment = (id, updateItem, params) => {
         const {title, topic_id, description} = updateItem;
-        updateDocumentMutation.mutate({
+
+        const reqParams = {
             id: id,
             params: {
                 topic_id: topic_id,
@@ -28,13 +29,9 @@ const DeactivateUserDialog = ({selectedItem, isOpen, onOpenChange}) => {
                 description: description,
                 ...params
             }
-        });
-    }
-
-    useEffect(() => {
-        if (updateDocumentMutation.data) {
-            const {returnCode} = updateDocumentMutation.data
-            if (returnCode === 200) {
+        }
+        updateDocumentMutation.mutate(reqParams, {
+            onSuccess: () => {
                 onOpenChange(false);
                 toast.success(
                     <div key={v4()}>
@@ -42,9 +39,13 @@ const DeactivateUserDialog = ({selectedItem, isOpen, onOpenChange}) => {
                     </div>
                 );
                 updateDocumentMutation.reset();
+            },
+            onError: (error) => {
+                const {returnMessage} = error;
+                toast.error(returnMessage);
             }
-        }
-    }, [updateDocumentMutation.data, title]);
+        });
+    }
 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>

@@ -12,7 +12,8 @@ const rolesType = {
 }
 
 const rolesGroup = {
-    department: "department"
+    department: "department",
+    document: "document",
 }
 
 export {

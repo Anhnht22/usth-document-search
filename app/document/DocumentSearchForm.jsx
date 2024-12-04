@@ -4,7 +4,7 @@ import {ChevronRight, Filter} from "lucide-react";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 import {Input} from "@/components/ui/input";
 import {MultiSelect} from "@/components/ui/multi-select";
-import {listActiveOptions} from "@/utils/common";
+import {listActiveOptions, listDocumentStatus} from "@/utils/common";
 import {Button} from "@/components/ui/button";
 import {useEffect, useMemo, useRef, useState} from "react";
 import {useForm, useWatch} from "react-hook-form";
@@ -120,6 +120,7 @@ const UserSearchForm = ({onChangeFilter}) => {
                                                     onValueChange={(value) => field.onChange(value)}
                                                     defaultValue={field.value}
                                                     placeholder="Select topic"
+                                                    variant="inverted"
                                                 />
                                                 <FormMessage/>
                                             </FormItem>
@@ -160,6 +161,25 @@ const UserSearchForm = ({onChangeFilter}) => {
                                             <FormItem>
                                                 <FormLabel className={cn("font-bold")}>Created date</FormLabel>
                                                 <DateRangePicker onChange={field.onChange}/>
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="document_status"
+                                        render={({field}) => (
+                                            <FormItem>
+                                                <FormLabel className={cn("font-bold")}>Document status</FormLabel>
+                                                <MultiSelect
+                                                    options={Object.values(listDocumentStatus)?.map(({key}) => ({
+                                                        value: key,
+                                                        label: key
+                                                    })) ?? []}
+                                                    onValueChange={field.onChange}
+                                                    defaultValue={field.value}
+                                                    placeholder="Select status"
+                                                    variant="inverted"
+                                                />
                                             </FormItem>
                                         )}
                                     />

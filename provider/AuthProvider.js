@@ -1,11 +1,12 @@
 'use client'
 
-import React, {createContext, useContext} from 'react'
+import React, {createContext, useContext, useEffect} from 'react'
 import Cookies from "js-cookie";
 import envConfig from "@/utils/envConfig";
 import {useLogin} from "@/hook/useUsers";
 import clientRoutes from "@/routes/client";
 import {useRouter} from "next/navigation";
+import {checkTokenExpiry, getCookie} from "@/utils/common";
 // Create the context
 const AuthContext = createContext()
 
@@ -24,11 +25,19 @@ export const AuthProvider = ({children}) => {
 
     const {mutate: loginApi, isPending} = useLogin();
 
+    const [userData, setUserData] = React.useState(null);
+    const [role, setRole] = React.useState(null);
+
     const login = (params, callback) => {
         loginApi(params, {
             onSuccess: (response) => {
                 const {data: {token}} = response;
                 Cookies.set(envConfig.authToken, token, {expires: 30});
+
+                const dataUser = checkTokenExpiry(token);
+                setUserData(dataUser.data);
+                setRole(dataUser.data.role);
+
                 callback?.(response, null);
             },
             onError: (error) => {
@@ -43,13 +52,27 @@ export const AuthProvider = ({children}) => {
         await router.push(clientRoutes.user.login.path);
     }
 
+    useEffect(() => {
+        const cookiesToken = Cookies.get(envConfig.authToken);
+        const authToken = cookiesToken ? cookiesToken : null;
+        const dataUser = authToken ? checkTokenExpiry(authToken) : null;
+        const isValidToken = dataUser ? dataUser.isValid : false;
+
+        if (isValidToken) {
+            setUserData(dataUser.data);
+            setRole(dataUser.data.role);
+        }
+    }, []);
+
     const value = {
         // Shared data
         isPendingLogin: isPending,
+        role: role,
+        userData: userData,
 
         // Shared functions
         login,
-        logout
+        logout,
     }
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

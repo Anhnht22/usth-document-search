@@ -56,7 +56,7 @@ export default function LoginPage() {
         <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
             <Card className="w-full max-w-md">
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)}>
+                    <form method="POST" onSubmit={form.handleSubmit(onSubmit)}>
                         <CardHeader>
                             <CardTitle className="text-2xl font-bold text-center">Login</CardTitle>
                             <CardDescription className="text-center">
