@@ -45,6 +45,29 @@ const ListUser = () => {
         }
     }, [isOpenUpdateDialog, isOpenDeactivateDialog, isOpenDeleteDialog]);
 
+    const maxRows = 2; // Số dòng tối đa hiển thị
+    const itemMinWidth = 60; // Độ rộng tối thiểu của mỗi phần tử
+    const itemHeight = 32; // Kích thước chiều cao của mỗi phần tử (ước tính)
+    const itemPadding = 6; // Padding cho mỗi phần tử
+    const containerWidth = 100; // Chiều rộng của vùng chứa
+
+    // Hàm xử lý tính toán số lượng phần tử hiển thị trong mỗi dòng
+    const calculateVisibleItems = (departments, maxRows, itemHeight, itemPadding, containerWidth, itemMinWidth) => {
+        // Số phần tử mỗi dòng có thể chứa dựa trên chiều rộng của vùng chứa
+        const maxItemsPerRow = Math.floor(containerWidth / itemMinWidth);
+
+        // Tổng số phần tử có thể hiển thị trong maxRows dòng
+        const maxItemsInVisibleRows = maxRows * maxItemsPerRow;
+
+        // Lấy các phần tử có thể hiển thị
+        const visibleItems = departments.slice(0, maxItemsInVisibleRows);
+        // Các phần tử bị ẩn (vượt quá giới hạn hiển thị)
+        const hiddenItems = departments.slice(maxItemsInVisibleRows);
+        const remainingItems = departments.length - visibleItems.length;
+
+        return {visibleItems, hiddenItems, remainingItems, maxItemsPerRow};
+    };
+
     return (
         <MainLayout>
             <div className={cn("flex gap-3 h-full")}>
@@ -64,18 +87,69 @@ const ListUser = () => {
                                     <TableHead className={cn("min-w-[300px]")}>Username</TableHead>
                                     <TableHead className={cn("min-w-[300px]")}>Email</TableHead>
                                     <TableHead className={cn("w-32")}>Role</TableHead>
+                                    <TableHead>Department</TableHead>
                                     <TableHead className={cn("w-32 text-center")}>Status</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {listData?.map((item) => {
-                                    const {user_id, username, email, role_id, active} = item;
+                                    const {user_id, username, email, role_id, active, department} = item;
+                                    const {
+                                        visibleItems,
+                                        hiddenItems,
+                                        remainingItems
+                                    } = calculateVisibleItems(department, maxRows, itemHeight, itemPadding, containerWidth, itemMinWidth);
                                     return (
                                         <TableRow key={user_id}>
                                             <TableCell>{user_id}</TableCell>
                                             <TableCell>{username}</TableCell>
                                             <TableCell>{email}</TableCell>
                                             <TableCell>{listRole?.data?.find(({role_id: roleId}) => roleId === role_id)?.role_name}</TableCell>
+                                            <TableCell>
+                                                <div style={{
+                                                    display: 'flex',
+                                                    flexWrap: 'wrap',
+                                                    gap: '6px',
+                                                    maxHeight: `${(maxRows * itemHeight) + ((maxRows - 1) * 6)}px`,
+                                                    padding: '3px',
+                                                    overflow: 'hidden',
+                                                }}>
+                                                    {visibleItems.map(({department_id, department_name}) => (
+                                                        <p
+                                                            key={department_id}
+                                                            style={{
+                                                                whiteSpace: 'nowrap',
+                                                                textOverflow: 'ellipsis',
+                                                                padding: '3px',
+                                                                border: '1px solid #ccc',
+                                                                borderRadius: '4px',
+                                                                overflow: 'hidden',
+                                                                minWidth: `${itemMinWidth}px`,
+                                                            }}
+                                                        >
+                                                            {department_name}
+                                                        </p>
+                                                    ))}
+
+                                                    {remainingItems > 0 && (
+                                                        <DropdownMenu>
+                                                            <DropdownMenuTrigger asChild>
+                                                                <Button variant="ghost"
+                                                                        className="p-3 border border-[#ccc] rounded bg-[#f0f0f0f] h-0 w-0">
+                                                                    <span>+{remainingItems}</span>
+                                                                </Button>
+                                                            </DropdownMenuTrigger>
+                                                            <DropdownMenuContent align="end">
+                                                                {hiddenItems.map(({department_id, department_name}) => (
+                                                                    <DropdownMenuItem key={department_id}>
+                                                                        {department_name}
+                                                                    </DropdownMenuItem>
+                                                                ))}
+                                                            </DropdownMenuContent>
+                                                        </DropdownMenu>
+                                                    )}
+                                                </div>
+                                            </TableCell>
                                             <TableCell>
                                                 <div className={cn("flex justify-center")}>
                                                     {active

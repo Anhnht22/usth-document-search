@@ -3,6 +3,7 @@
  */
 
 import * as React from "react";
+import {useEffect} from "react";
 import {cva} from "class-variance-authority";
 import {CheckIcon, ChevronDown, WandSparkles, XCircle, XIcon} from "lucide-react";
 
@@ -41,6 +42,7 @@ const multiSelectVariants = cva(
 export const MultiSelect = React.forwardRef(
     (
         {
+            value,
             options,
             onValueChange,
             variant,
@@ -57,9 +59,15 @@ export const MultiSelect = React.forwardRef(
         },
         ref
     ) => {
-        const [selectedValues, setSelectedValues] = React.useState(defaultValue);
+        const [selectedValues, setSelectedValues] = React.useState(value || defaultValue);
         const [isPopoverOpen, setIsPopoverOpen] = React.useState(false);
         const [isAnimating, setIsAnimating] = React.useState(false);
+
+        useEffect(() => {
+            if (value !== selectedValues) {
+                setSelectedValues(value || []);  // Đồng bộ hóa giá trị khi có sự thay đổi từ ngoài
+            }
+        }, [value]);
 
         const handleInputKeyDown = (event) => {
             if (event.key === "Enter") {

@@ -10,11 +10,11 @@ import {
 } from "@/components/ui/dialog";
 import {Button} from "@/components/ui/button";
 import {EyeIcon, EyeOffIcon, Plus} from "lucide-react";
-import {useMemo, useState} from "react";
+import {useEffect, useMemo, useState} from "react";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 import {cn} from "@/lib/utils";
 import {Input} from "@/components/ui/input";
-import {useForm} from "react-hook-form";
+import {useForm, useWatch} from "react-hook-form";
 import {toast} from "react-toastify";
 import {useCreateUser} from "@/hook/useUsers";
 import {z} from "zod";
@@ -22,6 +22,9 @@ import {zodResolver} from "@hookform/resolvers/zod";
 import {Switch} from "@/components/ui/switch";
 import {MultiSelect} from "@/components/ui/multi-select";
 import {useRole} from "@/hook/useRole";
+import {useDepartments} from "@/hook/useDepartments";
+import {useAuth} from "@/provider/AuthProvider";
+import {rolesType} from "@/roles/constants";
 
 const formSchema = z.object({
     username: z.string().min(1, {
@@ -39,9 +42,14 @@ const formSchema = z.object({
     role_id: z.number().min(1, {
         message: "Role is required!",
     }),
+    department_ids: z.array(z.number()).min(1, {
+        message: "Department is required!",
+    }),
 })
 
 const CreateUserDialog = () => {
+    const {role} = useAuth();
+
     const [isOpen, setIsOpen] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
@@ -52,12 +60,15 @@ const CreateUserDialog = () => {
             password: "",
             email: "",
             active: true,
-            role_id: 3,
+            role_id: 0,
+            department_ids: []
         }
     });
+    const userRole = useWatch({control: form.control, name: "role_id"});
 
     const {mutate: createUser, isPending} = useCreateUser();
-    const {data: listRole} = useRole();
+    const {data: listDepartment} = useDepartments({active: 1});
+    const {data: listRole} = useRole({active: 1});
 
     const onSubmit = async (params) => {
         createUser(params, {
@@ -82,6 +93,19 @@ const CreateUserDialog = () => {
         })) ?? [],
         [listRole]
     );
+
+    const listDepartmentOptions = useMemo(
+        () => listDepartment?.data?.map(({department_id, department_name}) =>
+            ({
+                value: department_id,
+                label: department_name
+            })) ?? [],
+        [listRole]
+    );
+
+    useEffect(() => {
+        form.setValue("department_ids", []);
+    }, [userRole]);
 
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -116,6 +140,46 @@ const CreateUserDialog = () => {
                                         )}
                                     />
                                 </div>
+                                <FormField
+                                    control={form.control}
+                                    name="role_id"
+                                    render={({field}) => (
+                                        <FormItem>
+                                            <FormLabel className={cn("font-bold text-black")}>
+                                                Role <span className="text-red-500"> *</span>
+                                            </FormLabel>
+                                            <MultiSelect
+                                                isMultiple={false}
+                                                isClearable={false}
+                                                options={listRoleOptions}
+                                                onValueChange={(value) => field.onChange(value[0])}
+                                                defaultValue={field.value === 0 ? [] : [field.value]}
+                                                placeholder="Select role"
+                                            />
+                                            <FormMessage/>
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="department_ids"
+                                    render={({field}) => (
+                                        <FormItem>
+                                            <FormLabel className={cn("font-bold text-black")}>
+                                                Department <span className="text-red-500"> *</span>
+                                            </FormLabel>
+                                            <MultiSelect
+                                                isMultiple={role !== rolesType.student}
+                                                options={listDepartmentOptions}
+                                                onValueChange={field.onChange}
+                                                value={field.value}
+                                                defaultValue={field.value}
+                                                placeholder="Select department"
+                                            />
+                                            <FormMessage/>
+                                        </FormItem>
+                                    )}
+                                />
                                 <FormField
                                     control={form.control}
                                     name="username"
@@ -188,23 +252,6 @@ const CreateUserDialog = () => {
                                         )}
                                     />
                                 </div>
-                                <FormField
-                                    control={form.control}
-                                    name="role_id"
-                                    render={({field}) => (
-                                        <FormItem>
-                                            <FormLabel className={cn("font-bold text-black")}>Status</FormLabel>
-                                            <MultiSelect
-                                                isMultiple={false}
-                                                isClearable={false}
-                                                options={listRoleOptions}
-                                                onValueChange={(value) => field.onChange(value[0])}
-                                                defaultValue={[field.value]}
-                                                placeholder="Select role"
-                                            />
-                                        </FormItem>
-                                    )}
-                                />
                             </div>
                             <div className={cn("flex justify-end")}>
                                 <Button disabled={isPending} type="submit">Save</Button>
