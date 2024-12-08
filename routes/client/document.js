@@ -6,7 +6,7 @@ const document = {
     list: {
         title: "Documents",
         path: base,
-        roles: [rolesType.admin, rolesType.professor, rolesType.student]
+        roles: [rolesType.admin, rolesType.professor]
     }
 };
 

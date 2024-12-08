@@ -3,13 +3,18 @@ import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {ChevronRight, Filter} from "lucide-react";
 import {Form, FormControl, FormField, FormItem, FormLabel} from "@/components/ui/form";
 import {Input} from "@/components/ui/input";
+import {MultiSelect} from "@/components/ui/multi-select";
+import {listActiveOptions} from "@/utils/common";
 import {Button} from "@/components/ui/button";
 import {useEffect, useMemo, useRef, useState} from "react";
 import {useForm, useWatch} from "react-hook-form";
 import {debounce, isEqual} from "lodash";
+import {useRole} from "@/hook/useRole";
+import {useSubject} from "@/hook/useSubject";
 
 const defaultValues = {
-    keyword: "",
+    topic_name: "",
+    subject_id: 0,
 }
 
 const TopicSearchForm = ({onChangeFilter}) => {
@@ -22,6 +27,16 @@ const TopicSearchForm = ({onChangeFilter}) => {
 
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
     const [isHoveringSidebar, setIsHoveringSidebar] = useState(false);
+
+    const {data: listSubject} = useSubject({active: 1});
+
+    const listSubjectOptions = useMemo(
+        () => listSubject?.data?.map(({subject_id, subject_name}) => ({
+            value: subject_id,
+            label: subject_name
+        })) ?? [],
+        [listSubject]
+    );
 
     const toggleSidebar = () => setIsSidebarVisible(prev => !prev)
 
@@ -78,15 +93,30 @@ const TopicSearchForm = ({onChangeFilter}) => {
                                 <div className="space-y-4">
                                     <FormField
                                         control={form.control}
-                                        name="keyword"
+                                        name="topic_name"
                                         render={({field}) => (
                                             <FormItem>
                                                 <FormLabel className={cn("font-bold")}>
-                                                    Keyword
+                                                    Topic
                                                 </FormLabel>
                                                 <FormControl>
-                                                    <Input placeholder="Keyword..." {...field} />
+                                                    <Input placeholder="Topic..." {...field} />
                                                 </FormControl>
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="subject_id"
+                                        render={({field}) => (
+                                            <FormItem>
+                                                <FormLabel className={cn("font-bold")}>Subject</FormLabel>
+                                                <MultiSelect
+                                                    options={listSubjectOptions}
+                                                    onValueChange={field.onChange}
+                                                    defaultValue={field.value}
+                                                    placeholder="Select subject"
+                                                />
                                             </FormItem>
                                         )}
                                     />

@@ -4,8 +4,8 @@ import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,} from "@/compo
 import {cn} from "@/lib/utils";
 import {Button} from "@/components/ui/button";
 import {usePathname} from "next/navigation";
-import {useEffect, useState} from "react";
-import {Building2, ChevronLeft, ChevronRight, Files, FileText, Home, Lightbulb, Users} from "lucide-react";
+import {useEffect, useMemo, useState} from "react";
+import {Building2, ChevronLeft, ChevronRight, Files, Home, Lightbulb, Users, WholeWord} from "lucide-react";
 import Link from "next/link";
 import logo from "@/public/logo.png";
 import Image from "next/image";
@@ -18,18 +18,24 @@ const menuItems = [
     {icon: Files, value: clientRoutes.document.list},
     {icon: Building2, value: clientRoutes.department.list},
     {icon: Lightbulb, value: clientRoutes.topic.list},
-    {
-
-        icon: FileText,
-        value: {title: "Reports"},
-        subItems: [
-            {value: {title: "Report 1", path: "/report"}},
-        ]
-    },
+    {icon: WholeWord, value: clientRoutes.keyword.list},
+    // {
+    //
+    //     icon: FileText,
+    //     value: {title: "Reports"},
+    //     subItems: [
+    //         {value: {title: "Report 1", path: "/report"}},
+    //     ]
+    // },
 ]
 
 const LeftToolbar = () => {
     const {role} = useAuth();
+
+    const menuItemsByRole = useMemo(() => menuItems.reduce((acc, item) => {
+        if (!item.value.roles) return [...acc, item];
+        return item.value.roles.includes(role) ? [...acc, item] : acc
+    }, []), [role]);
 
     const [isExpanded, setIsExpanded] = useState(true);
     const [openMenus, setOpenMenus] = useState([]);
@@ -59,7 +65,7 @@ const LeftToolbar = () => {
 
     // Auto-open parent menus if a subitem is active
     useEffect(() => {
-        menuItems.forEach(item => {
+        menuItemsByRole.forEach(item => {
             if (item.subItems) {
                 const isSubItemActive = item.subItems.some(subItem => isActive(subItem.href));
                 if (isSubItemActive && !openMenus.includes(item.name)) {
@@ -86,7 +92,7 @@ const LeftToolbar = () => {
                 </div>
 
                 <nav className="flex-1 pt-3 overflow-y-auto overflow-x-hidden">
-                    {menuItems.map(({value, subItems, ...itemMenu}) => (
+                    {menuItemsByRole.map(({value, subItems, ...itemMenu}) => (
                         <div key={value.title} className={cn("[&:not(:first-child)]:mt-2")}>
                             <Tooltip delayDuration={100}>
                                 <TooltipTrigger asChild>

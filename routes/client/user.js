@@ -10,7 +10,7 @@ const user = {
     list: {
         title: "Users",
         path: base,
-        roles: [rolesType.admin, rolesType.professor, rolesType.student]
+        roles: [rolesType.admin, rolesType.professor]
     }
 };
 
