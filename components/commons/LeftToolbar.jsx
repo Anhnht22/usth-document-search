@@ -5,30 +5,32 @@ import {cn} from "@/lib/utils";
 import {Button} from "@/components/ui/button";
 import {usePathname} from "next/navigation";
 import {useEffect, useState} from "react";
-import {Building2, ChevronLeft, ChevronRight, FileText, Home, Settings, Users} from "lucide-react";
+import {Building2, ChevronLeft, ChevronRight, Files, FileText, Home, Lightbulb, Users} from "lucide-react";
 import Link from "next/link";
 import logo from "@/public/logo.png";
 import Image from "next/image";
 import clientRoutes from "@/routes/client";
+import {useAuth} from "@/provider/AuthProvider";
 
 const menuItems = [
-    {name: clientRoutes.home.title, icon: Home, href: clientRoutes.home.path},
-    {name: clientRoutes.user.list.title, icon: Users, href: clientRoutes.user.list.path},
-    {name: clientRoutes.document.list.title, icon: Users, href: clientRoutes.document.list.path},
-    {name: clientRoutes.department.list.title, icon: Building2, href: clientRoutes.department.list.path},
+    {icon: Home, value: clientRoutes.home},
+    {icon: Users, value: clientRoutes.user.list},
+    {icon: Files, value: clientRoutes.document.list},
+    {icon: Building2, value: clientRoutes.department.list},
+    {icon: Lightbulb, value: clientRoutes.topic.list},
     {
-        name: "Reports",
+
         icon: FileText,
+        value: {title: "Reports"},
         subItems: [
-            {name: "Daily", href: "/reports/daily"},
-            {name: "Weekly", href: "/reports/weekly"},
-            {name: "Monthly", href: "/reports/monthly"},
+            {value: {title: "Report 1", path: "/report"}},
         ]
     },
-    {name: "Settings", icon: Settings, href: "/settings"},
 ]
 
 const LeftToolbar = () => {
+    const {role} = useAuth();
+
     const [isExpanded, setIsExpanded] = useState(true);
     const [openMenus, setOpenMenus] = useState([]);
     const pathname = usePathname();
@@ -84,52 +86,52 @@ const LeftToolbar = () => {
                 </div>
 
                 <nav className="flex-1 pt-3 overflow-y-auto overflow-x-hidden">
-                    {menuItems.map((item) => (
-                        <div key={item.name} className={cn("[&:not(:first-child)]:mt-2")}>
+                    {menuItems.map(({value, subItems, ...itemMenu}) => (
+                        <div key={value.title} className={cn("[&:not(:first-child)]:mt-2")}>
                             <Tooltip delayDuration={100}>
                                 <TooltipTrigger asChild>
                                     <Link
-                                        href={item.href ?? "#"}
+                                        href={value.path ?? "#"}
                                         className={cn(
                                             "flex items-center px-3 py-2 hover:bg-accent gap-2",
-                                            isActive(item.href) && "bg-accent text-accent-foreground",
+                                            isActive(value.path) && "bg-accent text-accent-foreground",
                                             !isExpanded && "justify-center"
                                         )}
                                         onClick={(e) => {
-                                            if (!item.href) {
+                                            if (!value.path) {
                                                 e.preventDefault();
-                                                item.subItems && toggleMenu(item.name)
+                                                subItems && toggleMenu(value.title)
                                             }
                                         }}
                                     >
-                                        <item.icon className={cn("h-5 w-5")}/>
+                                        {itemMenu.icon && <itemMenu.icon className={cn("h-5 w-5")}/>}
                                         {isExpanded && (
-                                            <span className="flex-1 h-5">{item.name}</span>
+                                            <span className="flex-1 h-5">{value.title}</span>
                                         )}
-                                        {isExpanded && item.subItems && (
+                                        {isExpanded && subItems && (
                                             <ChevronRight className={cn(
                                                 "h-4 w-4 transition-transform",
-                                                openMenus.includes(item.name) && "transform rotate-90"
+                                                openMenus.includes(value.title) && "transform rotate-90"
                                             )}/>
                                         )}
                                     </Link>
                                 </TooltipTrigger>
                                 <TooltipContent className={cn(isExpanded && "hidden")} side="right">
-                                    {item.name}
+                                    {value.title}
                                 </TooltipContent>
                             </Tooltip>
-                            {isExpanded && item.subItems && openMenus.includes(item.name) && (
+                            {isExpanded && subItems && openMenus.includes(value.title) && (
                                 <div className="ml-6 border-l">
-                                    {item.subItems.map((subItem) => (
+                                    {subItems.map(({value: subValue}) => (
                                         <Link
-                                            key={subItem.name}
-                                            href={subItem.href}
+                                            key={subValue.title}
+                                            href={subValue.path}
                                             className={cn(
                                                 "block p-2 pl-6 hover:bg-accent",
-                                                isActive(subItem.href) && "bg-accent text-accent-foreground"
+                                                isActive(subValue.path) && "bg-accent text-accent-foreground"
                                             )}
                                         >
-                                            {subItem.name}
+                                            {subValue.title}
                                         </Link>
                                     ))}
                                 </div>
