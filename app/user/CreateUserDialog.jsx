@@ -38,14 +38,14 @@ const formSchema = z.object({
     }).email({
         message: "Invalid email address!", // Kiểm tra định dạng email
     }),
-    active: z.boolean(),
+    active: z.number(),
     role_id: z.number().min(1, {
         message: "Role is required!",
     }),
     department_ids: z.array(z.number()).min(1, {
         message: "Department is required!",
     }),
-})
+});
 
 const CreateUserDialog = () => {
     const {role} = useAuth();
@@ -59,7 +59,7 @@ const CreateUserDialog = () => {
             username: "",
             password: "",
             email: "",
-            active: true,
+            active: 1,
             role_id: 0,
             department_ids: []
         }
@@ -94,6 +94,11 @@ const CreateUserDialog = () => {
         [listRole]
     );
 
+    const roleSelected = useMemo(
+        () => listRoleOptions.filter(item => item.value === userRole)?.[0]
+        , [userRole]
+    );
+
     const listDepartmentOptions = useMemo(
         () => listDepartment?.data?.map(({department_id, department_name}) =>
             ({
@@ -123,23 +128,21 @@ const CreateUserDialog = () => {
                     <form onSubmit={form.handleSubmit(onSubmit)}>
                         <div className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
-                                <div className={cn("col-span-full")}>
-                                    <FormField
-                                        control={form.control}
-                                        name="email"
-                                        render={({field}) => (
-                                            <FormItem>
-                                                <FormLabel className={cn("font-bold text-black")}>
-                                                    Email <span className="text-red-500"> *</span>
-                                                </FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="Email" {...field} />
-                                                </FormControl>
-                                                <FormMessage/>
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
+                                <FormField
+                                    control={form.control}
+                                    name="email"
+                                    render={({field}) => (
+                                        <FormItem>
+                                            <FormLabel className={cn("font-bold text-black")}>
+                                                Email <span className="text-red-500"> *</span>
+                                            </FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Email" {...field} />
+                                            </FormControl>
+                                            <FormMessage/>
+                                        </FormItem>
+                                    )}
+                                />
                                 <FormField
                                     control={form.control}
                                     name="role_id"
@@ -155,26 +158,6 @@ const CreateUserDialog = () => {
                                                 onValueChange={(value) => field.onChange(value[0])}
                                                 defaultValue={field.value === 0 ? [] : [field.value]}
                                                 placeholder="Select role"
-                                            />
-                                            <FormMessage/>
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="department_ids"
-                                    render={({field}) => (
-                                        <FormItem>
-                                            <FormLabel className={cn("font-bold text-black")}>
-                                                Department <span className="text-red-500"> *</span>
-                                            </FormLabel>
-                                            <MultiSelect
-                                                isMultiple={role !== rolesType.student}
-                                                options={listDepartmentOptions}
-                                                onValueChange={field.onChange}
-                                                value={field.value}
-                                                defaultValue={field.value}
-                                                placeholder="Select department"
                                             />
                                             <FormMessage/>
                                         </FormItem>
@@ -221,6 +204,26 @@ const CreateUserDialog = () => {
                                                     </button>
                                                 </div>
                                             </FormControl>
+                                            <FormMessage/>
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="department_ids"
+                                    render={({field}) => (
+                                        <FormItem>
+                                            <FormLabel className={cn("font-bold text-black")}>
+                                                Department <span className="text-red-500"> *</span>
+                                            </FormLabel>
+                                            <MultiSelect
+                                                isMultiple={roleSelected?.label !== rolesType.student}
+                                                options={listDepartmentOptions}
+                                                onValueChange={field.onChange}
+                                                value={field.value}
+                                                defaultValue={field.value}
+                                                placeholder="Select department"
+                                            />
                                             <FormMessage/>
                                         </FormItem>
                                     )}
