@@ -18,13 +18,8 @@ const DeleteUserDialog = ({selectedItem, isOpen, onOpenChange}) => {
     const deletePermanentlyUserMutation = useDeletePermanentlyUser();
 
     const deletePermanentlyUser = (id) => {
-        deletePermanentlyUserMutation.mutate(id);
-    }
-
-    useEffect(() => {
-        if (deletePermanentlyUserMutation.data) {
-            const {returnCode} = deletePermanentlyUserMutation.data
-            if (returnCode === 200) {
+        deletePermanentlyUserMutation.mutate(id, {
+            onSuccess: () => {
                 onOpenChange(false);
                 toast.success(
                     <div key={v4()}>
@@ -32,9 +27,13 @@ const DeleteUserDialog = ({selectedItem, isOpen, onOpenChange}) => {
                     </div>
                 );
                 deletePermanentlyUserMutation.reset();
+            },
+            onError: (error) => {
+                const {returnMessage} = error;
+                toast.error(returnMessage);
             }
-        }
-    }, [deletePermanentlyUserMutation.data, username]);
+        });
+    }
 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>

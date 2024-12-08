@@ -18,23 +18,25 @@ const DeleteDepartmentDialog = ({department, isOpen, onOpenChange}) => {
     const deletePermanentlyDepartmentMutation = useDeletePermanentlyDepartment();
 
     const deletePermanentlyDepartment = (id) => {
-        deletePermanentlyDepartmentMutation.mutate(id);
-    }
-
-    useEffect(() => {
-        if (deletePermanentlyDepartmentMutation.data) {
-            const {returnCode} = deletePermanentlyDepartmentMutation.data
-            if (returnCode === 200) {
-                onOpenChange(false);
-                toast.success(
-                    <div key={v4()}>
-                        Delete permanently department <b>{department_name}</b> successfully
-                    </div>
-                );
-                deletePermanentlyDepartmentMutation.reset();
+        deletePermanentlyDepartmentMutation.mutate(id, {
+            onSuccess: (response) => {
+                const {returnCode} = response
+                if (returnCode === 200) {
+                    onOpenChange(false);
+                    toast.success(
+                        <div key={v4()}>
+                            Delete permanently department <b>{department_name}</b> successfully
+                        </div>
+                    );
+                    deletePermanentlyDepartmentMutation.reset();
+                }
+            },
+            onError: (error) => {
+                const {returnMessage} = error;
+                toast.error(returnMessage);
             }
-        }
-    }, [deletePermanentlyDepartmentMutation.data, department_name]);
+        });
+    }
 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>

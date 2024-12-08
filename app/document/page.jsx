@@ -41,6 +41,7 @@ const Document = () => {
     const {data: listDataResp} = useDocument({
         limit: 20,
         page: page,
+        order: JSON.stringify({"t.document_id": "desc"}),
         ...(filter.active === "all" ? omit(filter, "active") : filter)
     });
     const {data: listData, total: totalData} = listDataResp || {};

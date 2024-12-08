@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import {cn} from "@/lib/utils";
 import {Button} from "@/components/ui/button";
-import {useEffect, useMemo} from "react";
+import {useMemo} from "react";
 import {toast} from "react-toastify";
 import {v4} from "uuid";
 import {useUpdateUser} from "@/hook/useUsers";
@@ -16,29 +16,30 @@ import {useUpdateUser} from "@/hook/useUsers";
 const DeactivateUserDialog = ({selectedItem, isOpen, onOpenChange}) => {
     const {active, email, password, role_id, user_id, username} = useMemo(() => selectedItem || {}, [selectedItem]);
 
-    const updateDepartmentMutation = useUpdateUser();
+    const updateUserMutation = useUpdateUser();
 
     const updateDepartment = (id, updateItem, params) => {
-        updateDepartmentMutation.mutate({
+        const reqParams = {
             id: id,
             params: params
-        });
-    }
+        };
 
-    useEffect(() => {
-        if (updateDepartmentMutation.data) {
-            const {returnCode} = updateDepartmentMutation.data
-            if (returnCode === 200) {
+        updateUserMutation.mutate(reqParams, {
+            onSuccess: () => {
                 onOpenChange(false);
                 toast.success(
                     <div key={v4()}>
-                        Update department <b>{username}</b> successfully
+                        Update user <b>{username}</b> successfully
                     </div>
                 );
-                updateDepartmentMutation.reset();
+                updateUserMutation.reset();
+            },
+            onError: (error) => {
+                const {returnMessage} = error;
+                toast.error(returnMessage);
             }
-        }
-    }, [updateDepartmentMutation.data, username]);
+        });
+    }
 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -57,7 +58,7 @@ const DeactivateUserDialog = ({selectedItem, isOpen, onOpenChange}) => {
                         Hủy
                     </Button>
                     <Button
-                        disabled={updateDepartmentMutation.isPending}
+                        disabled={updateUserMutation.isPending}
                         onClick={() => updateDepartment(user_id, selectedItem, {active: active ? 0 : 1})}
                     >
                         Xác nhận

@@ -7,10 +7,8 @@ import {
     DialogTitle
 } from "@/components/ui/dialog";
 import {Button} from "@/components/ui/button";
-import {useEffect} from "react";
 import {toast} from "react-toastify";
 import {v4} from "uuid";
-import {useDeletePermanentlyUser} from "@/hook/useUsers";
 import {useDeletePermanentlyDocument} from "@/hook/useDocument";
 
 const DeleteUserDialog = ({selectedItem, isOpen, onOpenChange}) => {
@@ -19,23 +17,26 @@ const DeleteUserDialog = ({selectedItem, isOpen, onOpenChange}) => {
     const deletePermanentlDocumentMutation = useDeletePermanentlyDocument();
 
     const deletePermanentlyUser = (id) => {
-        deletePermanentlDocumentMutation.mutate(id);
-    }
-
-    useEffect(() => {
-        if (deletePermanentlDocumentMutation.data) {
-            const {returnCode} = deletePermanentlDocumentMutation.data
-            if (returnCode === 200) {
-                onOpenChange(false);
-                toast.success(
-                    <div key={v4()}>
-                        Delete permanently user <b>{title}</b> successfully
-                    </div>
-                );
-                deletePermanentlDocumentMutation.reset();
+        deletePermanentlDocumentMutation.mutate(id, {
+                onSuccess: (response) => {
+                    const {returnCode} = response
+                    if (returnCode === 200) {
+                        onOpenChange(false);
+                        toast.success(
+                            <div key={v4()}>
+                                Delete permanently user <b>{title}</b> successfully
+                            </div>
+                        );
+                        deletePermanentlDocumentMutation.reset();
+                    }
+                },
+                onError: (error) => {
+                    const {returnMessage} = error;
+                    toast.error(returnMessage);
+                }
             }
-        }
-    }, [deletePermanentlDocumentMutation.data, title]);
+        );
+    }
 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
