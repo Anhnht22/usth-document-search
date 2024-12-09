@@ -5,7 +5,7 @@
 import * as React from "react";
 import {useEffect} from "react";
 import {cva} from "class-variance-authority";
-import {CheckIcon, ChevronDown, WandSparkles, XCircle, XIcon} from "lucide-react";
+import {CheckIcon, ChevronDown, Plus, WandSparkles, XCircle, XIcon} from "lucide-react";
 
 import {cn} from "@/lib/utils";
 import {Button} from "@/components/ui/button";
@@ -52,6 +52,8 @@ export const MultiSelect = React.forwardRef(
             maxCount = 3,
             modalPopover = true,
             isMultiple = true,
+            isCreate = false,
+            CreateComponent = <></>,
             asChild = false,
             isClearable = true,
             className,
@@ -62,6 +64,7 @@ export const MultiSelect = React.forwardRef(
         const [selectedValues, setSelectedValues] = React.useState(value || defaultValue);
         const [isPopoverOpen, setIsPopoverOpen] = React.useState(false);
         const [isAnimating, setIsAnimating] = React.useState(false);
+        const [isCreating, setIsCreating] = React.useState(false);
 
         useEffect(() => {
             if (value !== selectedValues) {
@@ -122,6 +125,10 @@ export const MultiSelect = React.forwardRef(
                 onValueChange(allValues);
             }
         };
+
+        const onCreateInternal = () => {
+            setIsCreating(true);
+        }
 
         return (
             <Popover
@@ -286,6 +293,19 @@ export const MultiSelect = React.forwardRef(
                                         </CommandItem>
                                     );
                                 })}
+                                {isCreate && (
+                                    isCreating
+                                        ? CreateComponent
+                                        : (
+                                            <CommandItem key="create" onSelect={onCreateInternal}
+                                                         className="cursor-pointer">
+                                                <div className={cn("mr-2 flex h-4 w-4 items-center justify-center")}>
+                                                    <Plus className="h-4 w-4"/>
+                                                </div>
+                                                <span>Create</span>
+                                            </CommandItem>
+                                        )
+                                )}
                             </CommandGroup>
                         </CommandList>
                     </Command>

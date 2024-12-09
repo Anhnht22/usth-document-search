@@ -10,10 +10,6 @@ const fetchDocument = async (params) => {
 }
 
 const createDocument = async (params) => {
-    for (let [key, value] of params.entries()) {
-        console.log("key: ", key);
-        console.log("value: ", value);
-    }
     const response = await new ApiBase().httpPost(apiRoutes.document.create, params);
     return await response.json();
 };

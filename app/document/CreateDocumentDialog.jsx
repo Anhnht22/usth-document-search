@@ -10,18 +10,21 @@ import {
 } from "@/components/ui/dialog";
 import {Button} from "@/components/ui/button";
 import {Plus} from "lucide-react";
-import {useMemo, useState} from "react";
+import * as React from "react";
+import {useCallback, useMemo, useState} from "react";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 import {cn} from "@/lib/utils";
 import {Input} from "@/components/ui/input";
 import {useForm} from "react-hook-form";
-import {toast} from "react-toastify";
 import {z} from "zod";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {useTopic} from "@/hook/useTopic";
 import {MultiSelect} from "@/components/ui/multi-select";
 import {FileUpload} from "@/components/ui-custom/FileUpload";
 import {useCreateDocument} from "@/hook/useDocument";
+import {useKeyword} from "@/hook/useKeyword";
+import {toast} from "react-toastify";
+import CreateKeywordDocument from "@/app/document/CreateKeywordDocument";
 
 const formSchema = z.object({
     title: z.string().min(1, {
@@ -36,6 +39,7 @@ const formSchema = z.object({
     file: z.any().refine((file) => file instanceof File, {
         message: "File is required!",
     }),
+    keyword_ids: z.array(z.number()).default([]),
 })
 
 const CreateDocumentDialog = () => {
@@ -45,14 +49,15 @@ const CreateDocumentDialog = () => {
             title: "",
             description: "",
             topic_id: "",
-            file: null
+            file: null,
+            keyword_ids: [],
         }
     });
+    console.log(form.watch())
 
     const {mutate: createDocument, isPending} = useCreateDocument();
-    const {data: topicResp} = useTopic({
-        active: 1
-    });
+    const {data: topicResp} = useTopic({active: 1});
+    const {data: keywordResp} = useKeyword({active: 1});
 
     const listTopicOptions = useMemo(
         () => topicResp?.data?.map(({topic_id, topic_name}) => ({
@@ -60,6 +65,14 @@ const CreateDocumentDialog = () => {
             label: topic_name
         })) ?? [],
         [topicResp]
+    );
+
+    const listKeywordOptions = useMemo(
+        () => keywordResp?.data?.map(({keyword_id, keyword}) => ({
+            value: keyword_id,
+            label: keyword
+        })) ?? [],
+        [keywordResp]
     );
 
     const [isOpen, setIsOpen] = useState(false);
@@ -70,6 +83,10 @@ const CreateDocumentDialog = () => {
         Object.keys(params).forEach((key) => {
             if (key === "file") {
                 formData.append("file", params.file); // File duy nhất
+            } else if (key === "keyword_ids" && Array.isArray(params[key])) {
+                params[key].forEach((id) => {
+                    formData.append("keyword_ids[]", id); // Append từng giá trị
+                });
             } else {
                 formData.append(key, params[key]);
             }
@@ -88,6 +105,11 @@ const CreateDocumentDialog = () => {
             },
         });
     };
+
+    const onCreate = (data) => {
+        const {insertId} = data;
+        form.setValue("keyword_ids", [...form.getValues("keyword_ids"), insertId]);
+    }
 
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -157,13 +179,33 @@ const CreateDocumentDialog = () => {
                                 />
                                 <FormField
                                     control={form.control}
+                                    name="keyword_ids"
+                                    render={({field}) => (
+                                        <FormItem>
+                                            <FormLabel className={cn("font-bold text-black")}>
+                                                Keyword
+                                            </FormLabel>
+                                            <MultiSelect
+                                                options={listKeywordOptions}
+                                                isCreate={true}
+                                                CreateComponent={<CreateKeywordDocument onCreate={onCreate}/>}
+                                                onValueChange={field.onChange}
+                                                value={field.value}
+                                                placeholder="Select keyword"
+                                            />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
                                     name="file"
                                     render={({field}) => (
                                         <FormItem>
-                                            <FormLabel className={cn("font-bold text-black")}>Files</FormLabel>
+                                            <FormLabel
+                                                className={cn("font-bold text-black")}>Files</FormLabel>
                                             <FileUpload
                                                 limit={1}
-                                                onFilesChange={(files) => field.onChange(files[0] || null)}
+                                                onFilesChange={useCallback((files) => field.onChange(files[0] || null), [])}
                                             />
                                             <FormMessage/>
                                         </FormItem>
