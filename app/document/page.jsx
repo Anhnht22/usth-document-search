@@ -4,13 +4,12 @@ import MainLayout from "@/components/commons/MainLayout";
 import {cn} from "@/lib/utils";
 import {Typography} from "@/components/ui/typography";
 import {Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
-import {CheckCircle2, EllipsisVertical, ExternalLink, LockKeyhole, Pencil, Trash2, XCircle} from "lucide-react";
+import {CheckCircle2, EllipsisVertical, LockKeyhole, Pencil, Trash2, XCircle} from "lucide-react";
 import {Pagination} from "@/components/ui-custom/Pagination";
 import {useEffect, useState} from "react";
-import {useDocument, useUpdateDocument} from "@/hook/useDocument";
+import {useDocument} from "@/hook/useDocument";
 import {convertUnixDate, ddMMyyyy} from "@/utils/common";
 import DocumentSearchForm from "@/app/document/DocumentSearchForm";
-import envConfig from "@/utils/envConfig";
 import UpdateDocumentDialog from "@/app/document/UpdateDocumentDialog";
 import DeactivateDocumentDialog from "@/app/document/DeactivateDocumentDialog";
 import DeleteDocumentDialog from "@/app/document/DeleteDocumentDialog";
@@ -22,6 +21,9 @@ import {actions, rolesGroup} from "@/roles/constants";
 import CreateDocumentDialog from "@/app/document/CreateDocumentDialog";
 import roles from "@/roles";
 import StatusDocumentUpdate from "@/app/document/StatusDocumentUpdate";
+import PreviewFile from "@/components/commons/PreviewFile";
+import envConfig from "@/utils/envConfig";
+import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from "@/components/ui/dialog";
 
 const rolesFunction = rolesGroup.document;
 
@@ -37,6 +39,7 @@ const Document = () => {
     const [isOpenUpdateDialog, setIsOpenUpdateDialog] = useState(false);
     const [isOpenDeactivateDialog, setIsOpenDeactivateDialog] = useState(false);
     const [isOpenDeleteDialog, setIsOpenDeleteDialog] = useState(false);
+    const [isOpenPreviewDialog, setIsOpenPreviewDialog] = useState(false);
 
     const {data: listDataResp} = useDocument({
         limit: 20,
@@ -94,10 +97,14 @@ const Document = () => {
                                             <TableCell>{title}</TableCell>
                                             <TableCell>{description}</TableCell>
                                             <TableCell>
-                                                {file_path.split('/').pop()}
-                                                <a href={envConfig.endPointStatic + "/" + file_path} target="_blank">
-                                                    <ExternalLink className={cn("w-5 h-5 inline ml-2")}/>
-                                                </a>
+                                                <div className={cn("hover:underline hover:cursor-pointer")}
+                                                     onClick={() => {
+                                                         setSelectedItem(item)
+                                                         setIsOpenPreviewDialog(true)
+                                                     }}
+                                                >
+                                                    {file_path.split('/').pop()}
+                                                </div>
                                             </TableCell>
                                             <TableCell>{username}</TableCell>
                                             <TableCell>{uploadString}</TableCell>
@@ -190,6 +197,47 @@ const Document = () => {
                 isOpen={isOpenDeleteDialog}
                 onOpenChange={setIsOpenDeleteDialog}
             />
+
+            {selectedItem && (
+                <Dialog open={isOpenPreviewDialog} onOpenChange={setIsOpenPreviewDialog}>
+                    <DialogContent className={cn("lg:max-w-screen-lg")}>
+                        <DialogHeader>
+                            <DialogTitle>Document Preview</DialogTitle>
+                            <DialogDescription>
+                                Preview Document
+                            </DialogDescription>
+                        </DialogHeader>
+
+                        <div
+                            className={cn("overflow-y-auto relative")}
+                            style={{maxHeight: "calc(100dvh - 150px - 50px)"}}
+                        >
+                            <PreviewFile fileUrl={envConfig.endPointStatic + "/" + selectedItem.file_path}/>
+
+                            <div
+                                className={cn(
+                                    "h-[50px] sticky -bottom-[1px] bg-white",
+                                    "flex justify-end items-center gap-3 p-3"
+                                )}
+                            >
+                                <Button
+                                    onClick={() => {
+                                        if (selectedItem && selectedItem.file_path) {
+                                            const fileUrl = envConfig.endPointStatic + "/" + selectedItem.file_path;
+                                            const link = document.createElement('a');
+                                            link.href = fileUrl;
+                                            link.download = selectedItem.file_path.split('/').pop(); // Tên file
+                                            link.click();
+                                        }
+                                    }}
+                                >
+                                    Download
+                                </Button>
+                            </div>
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            )}
         </MainLayout>
     );
 }
