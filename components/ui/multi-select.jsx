@@ -5,7 +5,7 @@
 import * as React from "react";
 import {useEffect} from "react";
 import {cva} from "class-variance-authority";
-import {CheckIcon, ChevronDown, WandSparkles, XCircle, XIcon} from "lucide-react";
+import {CheckIcon, ChevronDown, Plus, WandSparkles, XCircle, XIcon} from "lucide-react";
 
 import {cn} from "@/lib/utils";
 import {Button} from "@/components/ui/button";
@@ -50,8 +50,10 @@ export const MultiSelect = React.forwardRef(
             placeholder = "Select options",
             animation = 0,
             maxCount = 3,
-            modalPopover = false,
+            modalPopover = true,
             isMultiple = true,
+            isCreate = false,
+            CreateComponent = <></>,
             asChild = false,
             isClearable = true,
             className,
@@ -62,6 +64,7 @@ export const MultiSelect = React.forwardRef(
         const [selectedValues, setSelectedValues] = React.useState(value || defaultValue);
         const [isPopoverOpen, setIsPopoverOpen] = React.useState(false);
         const [isAnimating, setIsAnimating] = React.useState(false);
+        const [isCreating, setIsCreating] = React.useState(false);
 
         useEffect(() => {
             if (value !== selectedValues) {
@@ -123,6 +126,10 @@ export const MultiSelect = React.forwardRef(
             }
         };
 
+        const onCreateInternal = () => {
+            setIsCreating(true);
+        }
+
         return (
             <Popover
                 open={isPopoverOpen}
@@ -138,29 +145,34 @@ export const MultiSelect = React.forwardRef(
                             "flex w-full py-1 pl-3 pr-1 shadow-none rounded-md border min-h-9",
                             "h-auto items-center justify-between bg-inherit",
                             "hover:bg-inherit [&_svg]:pointer-events-auto",
-                            className
+                            className,
                         )}
                     >
                         {selectedValues.length > 0 ? (
-                            <div className="flex justify-between items-center w-full">
-                                <div className="flex flex-wrap items-center gap-1">
-                                    {selectedValues.slice(0, maxCount).map((value) => {
-                                        const option = options.find((o) => o.value === value);
-                                        const IconComponent = option?.icon;
-                                        return (
+                            <div className={cn(
+                                "flex justify-start items-center w-full relative flex-wrap gap-1.5",
+                                isClearable ? "pr-16" : "pr-8"
+                            )}>
+                                {selectedValues.slice(0, maxCount).map((value) => {
+                                    const option = options.find((o) => o.value === value);
+                                    const IconComponent = option?.icon;
+                                    return (
+                                        <div key={value} className="max-w-full">
                                             <Badge
                                                 key={value}
                                                 className={cn(
                                                     isMultiple ? "" : "border-0 shadow-none font-medium p-0 text-sm",
                                                     isAnimating ? "animate-bounce" : "",
-                                                    multiSelectVariants({variant})
+                                                    multiSelectVariants({variant}),
+                                                    "max-w-full bg-transparent hover:bg-transparent",
                                                 )}
                                                 style={{animationDuration: `${animation}s`}}
                                             >
                                                 {IconComponent && (
                                                     <IconComponent className="h-4 w-4 mr-2"/>
                                                 )}
-                                                {option?.label}
+                                                <span
+                                                    className={cn("truncate max-w-full text-start")}>{option?.label}</span>
                                                 {isMultiple && (
                                                     <XCircle
                                                         className="ml-2 h-4 w-4 cursor-pointer"
@@ -171,29 +183,29 @@ export const MultiSelect = React.forwardRef(
                                                     />
                                                 )}
                                             </Badge>
-                                        );
-                                    })}
-                                    {selectedValues.length > maxCount && (
-                                        <Badge
-                                            className={cn(
-                                                "bg-transparent text-foreground border-foreground/1 hover:bg-transparent",
-                                                isAnimating ? "animate-bounce" : "",
-                                                multiSelectVariants({variant})
-                                            )}
-                                            style={{animationDuration: `${animation}s`}}
-                                        >
-                                            {`+ ${selectedValues.length - maxCount} more`}
-                                            <XCircle
-                                                className="ml-2 h-4 w-4 cursor-pointer"
-                                                onClick={(event) => {
-                                                    event.stopPropagation();
-                                                    clearExtraOptions();
-                                                }}
-                                            />
-                                        </Badge>
-                                    )}
-                                </div>
-                                <div className="flex items-center justify-between">
+                                        </div>
+                                    );
+                                })}
+                                {selectedValues.length > maxCount && (
+                                    <Badge
+                                        className={cn(
+                                            "bg-transparent text-foreground border-foreground/1 hover:bg-transparent",
+                                            isAnimating ? "animate-bounce" : "",
+                                            multiSelectVariants({variant})
+                                        )}
+                                        style={{animationDuration: `${animation}s`}}
+                                    >
+                                        {`+ ${selectedValues.length - maxCount} more`}
+                                        <XCircle
+                                            className="ml-2 h-4 w-4 cursor-pointer"
+                                            onClick={(event) => {
+                                                event.stopPropagation();
+                                                clearExtraOptions();
+                                            }}
+                                        />
+                                    </Badge>
+                                )}
+                                <div className="flex items-center justify-between absolute right-0">
                                     {isClearable && (
                                         <XIcon
                                             className="h-4 mx-2 cursor-pointer text-muted-foreground"
@@ -220,8 +232,10 @@ export const MultiSelect = React.forwardRef(
                         )}
                     </Button>
                 </PopoverTrigger>
-                <PopoverContent className="min-w-full p-0" align="start"
-                                onEscapeKeyDown={() => setIsPopoverOpen(false)}>
+                <PopoverContent
+                    className="min-w-full p-0" align="start"
+                    onEscapeKeyDown={() => setIsPopoverOpen(false)}
+                >
                     <Command>
                         <CommandInput placeholder="Search..." onKeyDown={handleInputKeyDown}/>
                         <CommandList>
@@ -279,6 +293,19 @@ export const MultiSelect = React.forwardRef(
                                         </CommandItem>
                                     );
                                 })}
+                                {isCreate && (
+                                    isCreating
+                                        ? CreateComponent
+                                        : (
+                                            <CommandItem key="create" onSelect={onCreateInternal}
+                                                         className="cursor-pointer">
+                                                <div className={cn("mr-2 flex h-4 w-4 items-center justify-center")}>
+                                                    <Plus className="h-4 w-4"/>
+                                                </div>
+                                                <span>Create</span>
+                                            </CommandItem>
+                                        )
+                                )}
                             </CommandGroup>
                         </CommandList>
                     </Command>

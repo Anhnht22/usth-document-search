@@ -1,13 +1,13 @@
 import {rolesType} from "@/roles/constants";
 
-const base = "/department";
+const base = "/topic";
 
-const department = {
+const user = {
     list: {
-        title: "Departments",
+        title: "Topics",
         path: base,
         roles: [rolesType.admin, rolesType.professor]
     }
 };
 
-export default department;
+export default user;
