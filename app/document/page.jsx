@@ -61,17 +61,18 @@ const Document = () => {
             <div className={cn("flex gap-3 h-full")}>
                 <div className="flex-1 py-3 pl-3 flex flex-col h-full">
                     <div className={cn("flex justify-between")}>
-                        <Typography variant="h2" className={cn("mb-4")}>Department</Typography>
+                        <Typography variant="h2" className={cn("mb-4")}>Document</Typography>
                         <div className={cn("space-x-3")}>
+                            {/*Kiểm tra xem role có được thực hiện action nào không*/}
                             {roles[rolesFunction][role].includes(actions.create) && <CreateDocumentDialog/>}
                         </div>
                     </div>
                     <div className={cn("flex-1 overflow-auto")}>
                         <Table>
-                            <TableCaption>List of departments in the organization</TableCaption>
+                            <TableCaption>List of document in the organization</TableCaption>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead className={cn("w-20")}>ID</TableHead>
+                                    <TableHead className={cn("w-20")}>STT</TableHead>
                                     <TableHead className={cn("min-w-[150px]")}>Topic</TableHead>
                                     <TableHead className={cn("w-[250px]")}>Title</TableHead>
                                     <TableHead className={cn("w-[300px]")}>Description</TableHead>
@@ -83,7 +84,7 @@ const Document = () => {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {listData?.map((item) => {
+                                {listData?.map((item, index) => {
                                     const {
                                         document_id, file_path, title, description, upload_date,
                                         document_active, username, topic_name, status
@@ -92,7 +93,7 @@ const Document = () => {
 
                                     return (
                                         <TableRow key={document_id}>
-                                            <TableCell>{document_id}</TableCell>
+                                            <TableCell>{index * page + 1}</TableCell>
                                             <TableCell>{topic_name}</TableCell>
                                             <TableCell>{title}</TableCell>
                                             <TableCell>{description}</TableCell>

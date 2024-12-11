@@ -11,7 +11,7 @@ import {
 import {Button} from "@/components/ui/button";
 import {Plus} from "lucide-react";
 import * as React from "react";
-import {useCallback, useMemo, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 import {cn} from "@/lib/utils";
 import {Input} from "@/components/ui/input";
@@ -53,27 +53,54 @@ const CreateDocumentDialog = () => {
             keyword_ids: [],
         }
     });
-    console.log(form.watch())
 
     const {mutate: createDocument, isPending} = useCreateDocument();
-    const {data: topicResp} = useTopic({active: 1});
-    const {data: keywordResp} = useKeyword({active: 1});
 
-    const listTopicOptions = useMemo(
-        () => topicResp?.data?.map(({topic_id, topic_name}) => ({
-            value: topic_id,
-            label: topic_name
-        })) ?? [],
-        [topicResp]
-    );
+    const [listTopicOptions, setListTopicOptions] = useState([]);
+    const [topicPage, setTopicPage] = useState(1);
+    const {data: topicResp} = useTopic({
+        limit: 10,
+        page: topicPage,
+        active: 1,
+        order: JSON.stringify({"t.topic_id": "desc"})
+    });
 
-    const listKeywordOptions = useMemo(
-        () => keywordResp?.data?.map(({keyword_id, keyword}) => ({
-            value: keyword_id,
-            label: keyword
-        })) ?? [],
-        [keywordResp]
-    );
+    const [listKeywordOptions, setListKeywordOptions] = useState([]);
+    const [keywordPage, setKeywordPage] = useState(1);
+    const {data: keywordResp} = useKeyword({
+        limit: 10,
+        page: keywordPage,
+        active: 1,
+        order: JSON.stringify({"t.keyword_id": "desc"})
+    });
+
+    useEffect(() => {
+        setListTopicOptions(prev =>
+            [
+                ...prev,
+                ...(
+                    topicResp?.data?.map(({topic_id, topic_name}) => ({
+                        value: topic_id,
+                        label: topic_name
+                    })) ?? []
+                )
+            ]
+        )
+    }, [topicResp]);
+
+    useEffect(() => {
+        setListKeywordOptions(prev =>
+            [
+                ...prev,
+                ...(
+                    keywordResp?.data?.map(({keyword_id, keyword}) => ({
+                        value: keyword_id,
+                        label: keyword
+                    })) ?? []
+                )
+            ]
+        )
+    }, [keywordResp]);
 
     const [isOpen, setIsOpen] = useState(false);
 
@@ -169,6 +196,15 @@ const CreateDocumentDialog = () => {
                                                 isMultiple={false}
                                                 isClearable={false}
                                                 options={listTopicOptions}
+                                                loadMore={
+                                                    useCallback(() => {
+                                                        if (topicResp) {
+                                                            const {total: {limits, pages, total}} = topicResp;
+                                                            if (pages * limits < total)
+                                                                setTopicPage(cur => cur + 1)
+                                                        }
+                                                    }, [topicResp])
+                                                }
                                                 onValueChange={(value) => field.onChange(value[0])}
                                                 defaultValue={field.value !== "" ? [field.value] : []}
                                                 placeholder="Select topic"
@@ -187,6 +223,15 @@ const CreateDocumentDialog = () => {
                                             </FormLabel>
                                             <MultiSelect
                                                 options={listKeywordOptions}
+                                                loadMore={
+                                                    useCallback(() => {
+                                                        if (keywordResp) {
+                                                            const {total: {limits, pages, total}} = keywordResp;
+                                                            if (pages * limits < total)
+                                                                setKeywordPage(cur => cur + 1)
+                                                        }
+                                                    }, [keywordResp])
+                                                }
                                                 isCreate={true}
                                                 CreateComponent={<CreateKeywordDocument onCreate={onCreate}/>}
                                                 onValueChange={field.onChange}

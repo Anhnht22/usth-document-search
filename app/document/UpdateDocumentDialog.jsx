@@ -162,7 +162,7 @@ const UpdateUserDialog = ({selectedItem, isOpen, onOpenChange}) => {
                                                 isClearable={false}
                                                 options={listTopicOptions}
                                                 onValueChange={(value) => field.onChange(value[0])}
-                                                defaultValue={field.value !== "" ? [field.value] : []}
+                                                value={field.value !== "" ? [field.value] : []}
                                                 placeholder="Select topic"
                                             />
                                             <FormMessage/>
