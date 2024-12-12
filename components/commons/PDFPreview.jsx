@@ -22,7 +22,7 @@ export default function PDFViewer({fileUrl}) {
         <div className="flex flex-col items-center h-full">
             <div className="mb-4 flex-grow overflow-y-auto overflow-x-auto max-w-full">
                 <Document
-                    file={"https://pdfobject.com/pdf/sample.pdf"}
+                    file={fileUrl}
                     onLoadSuccess={onDocumentLoadSuccess}
                     loading={<p>Loading PDF...</p>}
                     error={<p>Error loading PDF!</p>}

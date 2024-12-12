@@ -25,6 +25,7 @@ import {useCreateDocument} from "@/hook/useDocument";
 import {useKeyword} from "@/hook/useKeyword";
 import {toast} from "react-toastify";
 import CreateKeywordDocument from "@/app/document/CreateKeywordDocument";
+import slugify from "slugify";
 
 const formSchema = z.object({
     title: z.string().min(1, {
@@ -109,7 +110,26 @@ const CreateDocumentDialog = () => {
         formData.append("folder", "document");
         Object.keys(params).forEach((key) => {
             if (key === "file") {
-                formData.append("file", params.file); // File duy nhất
+                const file = params.file;
+
+                // Tách tên file và extension
+                const originalName = file.name;
+                const extension = originalName.substring(originalName.lastIndexOf('.')); // Lấy extension (.docx, .pdf, ...)
+
+                // Chuẩn hóa tên file (không tính phần extension)
+                const baseName = slugify(originalName.substring(0, originalName.lastIndexOf('.')), {
+                    lower: true,
+                    strict: true,
+                });
+
+                // Nối lại tên file và extension
+                const safeName = `${baseName}${extension}`;
+
+                // Tạo file mới với tên chuẩn hóa
+                const renamedFile = new File([file], safeName, {type: file.type});
+
+                // Thêm vào FormData
+                formData.append("file", renamedFile);
             } else if (key === "keyword_ids" && Array.isArray(params[key])) {
                 params[key].forEach((id) => {
                     formData.append("keyword_ids[]", id); // Append từng giá trị
