@@ -3,7 +3,7 @@
  */
 
 import * as React from "react";
-import {useEffect} from "react";
+import {useEffect, useMemo} from "react";
 import {cva} from "class-variance-authority";
 import {CheckIcon, ChevronDown, Plus, WandSparkles, XCircle, XIcon} from "lucide-react";
 
@@ -13,6 +13,8 @@ import {Badge} from "@/components/ui/badge";
 import {Popover, PopoverContent, PopoverTrigger,} from "@/components/ui/popover";
 import {Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList,} from "@/components/ui/command";
 import {Separator} from "@radix-ui/react-select";
+import {useInView} from "react-intersection-observer";
+import {v4} from "uuid";
 
 /**
  * Variants for the multi-select component to handle different styles.
@@ -57,6 +59,7 @@ export const MultiSelect = React.forwardRef(
             asChild = false,
             isClearable = true,
             className,
+            loadMore,
             ...props
         },
         ref
@@ -65,6 +68,9 @@ export const MultiSelect = React.forwardRef(
         const [isPopoverOpen, setIsPopoverOpen] = React.useState(false);
         const [isAnimating, setIsAnimating] = React.useState(false);
         const [isCreating, setIsCreating] = React.useState(false);
+
+        const id = useMemo(() => v4(), []);
+        const {ref: inViewRef, inView} = useInView();
 
         useEffect(() => {
             if (value !== selectedValues) {
@@ -129,6 +135,14 @@ export const MultiSelect = React.forwardRef(
         const onCreateInternal = () => {
             setIsCreating(true);
         }
+
+        useEffect(() => {
+            console.log("inView: ", inView);
+            if (isPopoverOpen && inView && loadMore) {
+                console.log("Load more");
+                loadMore()
+            }
+        }, [inView, isPopoverOpen, loadMore])
 
         return (
             <Popover
@@ -238,9 +252,22 @@ export const MultiSelect = React.forwardRef(
                 >
                     <Command>
                         <CommandInput placeholder="Search..." onKeyDown={handleInputKeyDown}/>
+                        {isCreate && (
+                            isCreating
+                                ? CreateComponent
+                                : (
+                                    <CommandItem key="create" onSelect={onCreateInternal}
+                                                 className="cursor-pointer">
+                                        <div className={cn("mr-2 flex h-4 w-4 items-center justify-center")}>
+                                            <Plus className="h-4 w-4"/>
+                                        </div>
+                                        <span>Create</span>
+                                    </CommandItem>
+                                )
+                        )}
                         <CommandList>
                             <CommandEmpty>No results found.</CommandEmpty>
-                            <CommandGroup>
+                            <CommandGroup id={id}>
                                 {isMultiple && (
                                     <CommandItem key="all" onSelect={toggleAll} className="cursor-pointer">
                                         <div
@@ -256,10 +283,11 @@ export const MultiSelect = React.forwardRef(
                                         <span>(Select All)</span>
                                     </CommandItem>
                                 )}
-                                {options.map((option) => {
+                                {options.map((option, index) => {
                                     const isSelected = selectedValues.includes(option.value);
                                     return (
                                         <CommandItem
+                                            ref={index === options.length - 1 ? inViewRef : null}
                                             key={option.value}
                                             onSelect={() => toggleOption(option.value)}
                                             className={cn("cursor-pointer")}
@@ -293,19 +321,6 @@ export const MultiSelect = React.forwardRef(
                                         </CommandItem>
                                     );
                                 })}
-                                {isCreate && (
-                                    isCreating
-                                        ? CreateComponent
-                                        : (
-                                            <CommandItem key="create" onSelect={onCreateInternal}
-                                                         className="cursor-pointer">
-                                                <div className={cn("mr-2 flex h-4 w-4 items-center justify-center")}>
-                                                    <Plus className="h-4 w-4"/>
-                                                </div>
-                                                <span>Create</span>
-                                            </CommandItem>
-                                        )
-                                )}
                             </CommandGroup>
                         </CommandList>
                     </Command>

@@ -6,6 +6,7 @@ import document from "@/routes/client/document";
 import topic from "@/routes/client/topic";
 import keyword from "@/routes/client/keyword";
 
+// Phân quyền có được vào trang đó hay không
 const clientRoutes = {
     error: error,
     home: {

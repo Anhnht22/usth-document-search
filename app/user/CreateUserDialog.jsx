@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import {Button} from "@/components/ui/button";
 import {EyeIcon, EyeOffIcon, Plus} from "lucide-react";
-import {useEffect, useMemo, useState} from "react";
+import {useCallback, useEffect, useMemo, useState} from "react";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 import {cn} from "@/lib/utils";
 import {Input} from "@/components/ui/input";
@@ -67,7 +67,15 @@ const CreateUserDialog = () => {
     const userRole = useWatch({control: form.control, name: "role_id"});
 
     const {mutate: createUser, isPending} = useCreateUser();
-    const {data: listDepartment} = useDepartments({active: 1});
+
+    const [listDepartmentOptions, setListDepartmentOptions] = useState([]);
+    const [departmentPage, setDepartmentPage] = useState(1);
+    const {data: listDepartment} = useDepartments({
+        active: 1,
+        limit: 10,
+        page: departmentPage,
+        order: JSON.stringify({"t.department_id": "desc"}),
+    });
     const {data: listRole} = useRole({active: 1});
 
     const onSubmit = async (params) => {
@@ -99,14 +107,20 @@ const CreateUserDialog = () => {
         , [userRole]
     );
 
-    const listDepartmentOptions = useMemo(
-        () => listDepartment?.data?.map(({department_id, department_name}) =>
-            ({
-                value: department_id,
-                label: department_name
-            })) ?? [],
-        [listRole]
-    );
+    useEffect(() => {
+        setListDepartmentOptions(prev =>
+            [
+                ...prev,
+                ...(
+                    listDepartment?.data?.map(({department_id, department_name}) =>
+                        ({
+                            value: department_id,
+                            label: department_name
+                        })) ?? []
+                )
+            ]
+        )
+    }, [listDepartment]);
 
     useEffect(() => {
         form.setValue("department_ids", []);
@@ -219,6 +233,15 @@ const CreateUserDialog = () => {
                                             <MultiSelect
                                                 isMultiple={roleSelected?.label !== rolesType.student}
                                                 options={listDepartmentOptions}
+                                                loadMore={
+                                                    useCallback(() => {
+                                                        if (listDepartment) {
+                                                            const {total: {limits, pages, total}} = listDepartment;
+                                                            if (pages * limits < total)
+                                                                setDepartmentPage(cur => cur + 1)
+                                                        }
+                                                    }, [listDepartment])
+                                                }
                                                 onValueChange={field.onChange}
                                                 value={field.value}
                                                 defaultValue={field.value}
