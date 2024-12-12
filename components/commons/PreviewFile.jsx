@@ -1,9 +1,10 @@
 import WordPreview from "@/components/commons/WordPreview";
 import ImagePreview from "@/components/commons/ImagePreview";
 import {useEffect, useState} from "react";
-import PDFPreview from "@/components/commons/PDFPreview";
+import PDFViewer from "@/components/commons/PDFPreviewWrapper";
 
 const PreviewFile = ({fileUrl}) => {
+    console.log(fileUrl)
     const [fileType, setFileType] = useState("");
 
     useEffect(() => {
@@ -17,7 +18,7 @@ const PreviewFile = ({fileUrl}) => {
     }, [fileUrl]);
 
     if (fileType.includes("pdf")) {
-        return <PDFPreview fileUrl={fileUrl}/>;
+        return <PDFViewer fileUrl={fileUrl}/>;
     }
 
     if (fileType.includes("image")) {
