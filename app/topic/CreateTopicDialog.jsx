@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import {Button} from "@/components/ui/button";
 import {Plus} from "lucide-react";
-import {useMemo, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 import {cn} from "@/lib/utils";
 import {Input} from "@/components/ui/input";
@@ -19,9 +19,9 @@ import {toast} from "react-toastify";
 import {z} from "zod";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {useAuth} from "@/provider/AuthProvider";
-import {useSubject} from "@/hook/useSubject";
 import {useCreateTopic} from "@/hook/useTopic";
 import {MultiSelect} from "@/components/ui/multi-select";
+import {useSubject} from "@/hook/useSubject";
 
 const formSchema = z.object({
     topic_name: z.string().min(1, {
@@ -46,15 +46,38 @@ const CreateTopicDialog = () => {
     });
 
     const {mutate: createUser, isPending} = useCreateTopic();
-    const {data: listSubject} = useSubject({active: 1});
 
-    const listSubjectOptions = useMemo(
-        () => listSubject?.data?.map(({subject_id, subject_name}) => ({
-            value: subject_id,
-            label: subject_name
-        })) ?? [],
-        [listSubject]
-    );
+    const [listSubjectOptions, setListSubjectOptions] = useState([]);
+    const [topicPage, setTopicPage] = useState(1);
+    const {data: listSubject} = useSubject({
+        limit: 10,
+        page: topicPage,
+        active: 1,
+        order: JSON.stringify({"t.subject_id": "desc"})
+    });
+
+    const setTopicPageChange = useCallback(() => {
+        if (listSubject) {
+            const {total: {limits, pages, total}} = listSubject;
+            if (pages * limits < total) setTopicPage(cur => cur + 1)
+        }
+    }, [listSubject]);
+
+    useEffect(() => {
+        setListSubjectOptions(prev =>
+            [
+                ...prev,
+                ...(
+                    listSubject?.data
+                        ?.filter(({subject_id}) => !prev.some(option => option.value === subject_id))
+                        .map(({subject_id, subject_name}) => ({
+                            value: subject_id,
+                            label: subject_name
+                        })) ?? []
+                )
+            ]
+        )
+    }, [listSubject]);
 
     const onSubmit = async (params) => {
         createUser(params, {
@@ -117,6 +140,7 @@ const CreateTopicDialog = () => {
                                             onValueChange={(value) => field.onChange(value[0])}
                                             defaultValue={field.value === 0 ? [] : [field.value]}
                                             placeholder="Select subject"
+                                            loadMore={setTopicPageChange}
                                         />
                                         <FormMessage/>
                                     </FormItem>

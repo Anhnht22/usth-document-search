@@ -1,29 +1,24 @@
 "use client"
 
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger
-} from "@/components/ui/dialog";
 import {Button} from "@/components/ui/button";
-import {EyeIcon, EyeOffIcon, Plus} from "lucide-react";
-import {useCallback, useEffect, useMemo, useState} from "react";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 import {cn} from "@/lib/utils";
 import {Input} from "@/components/ui/input";
 import {useForm, useWatch} from "react-hook-form";
 import {toast} from "react-toastify";
-import {useCreateUser} from "@/hook/useUsers";
 import {z} from "zod";
 import {zodResolver} from "@hookform/resolvers/zod";
-import {Switch} from "@/components/ui/switch";
-import {MultiSelect} from "@/components/ui/multi-select";
-import {useRole} from "@/hook/useRole";
 import {useDepartments} from "@/hook/useDepartments";
 import {useAuth} from "@/provider/AuthProvider";
+import MainLayout from "@/components/commons/MainLayout";
+import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
+import {useRouter} from "next/navigation";
+import clientRoutes from "@/routes/client";
+import {useCallback, useEffect, useMemo, useState} from "react";
+import {useCreateUser} from "@/hook/useUsers";
+import {useRole} from "@/hook/useRole";
+import {MultiSelect} from "@/components/ui/multi-select";
+import {EyeIcon, EyeOffIcon} from "lucide-react";
 import {rolesType} from "@/roles/constants";
 
 const formSchema = z.object({
@@ -47,10 +42,11 @@ const formSchema = z.object({
     }),
 });
 
-const CreateUserDialog = () => {
+const CreateDepartment = () => {
+    const router = useRouter();
+
     const {role} = useAuth();
 
-    const [isOpen, setIsOpen] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
     const form = useForm({
@@ -64,7 +60,8 @@ const CreateUserDialog = () => {
             department_ids: []
         }
     });
-    const userRole = useWatch({control: form.control, name: "role_id"});
+
+    const userRoleId = useWatch({control: form.control, name: "role_id"});
 
     const {mutate: createUser, isPending} = useCreateUser();
 
@@ -72,48 +69,19 @@ const CreateUserDialog = () => {
     const [departmentPage, setDepartmentPage] = useState(1);
     const {data: listDepartment} = useDepartments({
         active: 1,
-        limit: 10,
+        limit: 20,
         page: departmentPage,
         order: JSON.stringify({"t.department_id": "desc"}),
     });
-    const {data: listRole} = useRole({active: 1});
-
-    const onSubmit = async (params) => {
-        createUser(params, {
-            onSuccess: (response) => {
-                const {returnMessage} = response;
-
-                form.reset();
-                toast.success(returnMessage);
-                setIsOpen(false);
-            },
-            onError: (error) => {
-                const {returnMessage} = error;
-                toast.error(returnMessage);
-            },
-        });
-    };
-
-    const listRoleOptions = useMemo(
-        () => listRole?.data?.map(({role_id, role_name}) => ({
-            value: role_id,
-            label: role_name
-        })) ?? [],
-        [listRole]
-    );
-
-    const roleSelected = useMemo(
-        () => listRoleOptions.filter(item => item.value === userRole)?.[0]
-        , [userRole]
-    );
 
     useEffect(() => {
         setListDepartmentOptions(prev =>
             [
                 ...prev,
                 ...(
-                    listDepartment?.data?.map(({department_id, department_name}) =>
-                        ({
+                    listDepartment?.data
+                        ?.filter(({department_id}) => !prev.some(option => option.value === department_id))
+                        .map(({department_id, department_name}) => ({
                             value: department_id,
                             label: department_name
                         })) ?? []
@@ -122,26 +90,54 @@ const CreateUserDialog = () => {
         )
     }, [listDepartment]);
 
-    useEffect(() => {
-        form.setValue("department_ids", []);
-    }, [userRole]);
+    const setPageChange = useCallback(() => {
+        if (listDepartment) {
+            const {total: {limits, pages, total}} = listDepartment;
+            if (pages * limits < total) setDepartmentPage(cur => cur + 1)
+        }
+    }, [listDepartment]);
+
+    const {data: listRole} = useRole({
+        active: 1,
+        limit: -999
+    });
+    const listRoleOptions = useMemo(
+        () => listRole?.data?.map(({role_id, role_name}) => ({
+            value: role_id,
+            label: role_name
+        })) ?? [],
+        [listRole]
+    );
+
+    const onSubmit = async (params) => {
+        createUser(params, {
+            onSuccess: (response) => {
+                const {returnMessage} = response;
+
+                form.reset();
+                toast.success(returnMessage);
+                router.push(clientRoutes.user.list.path);
+            },
+            onError: (error) => {
+                const {returnMessage} = error;
+                toast.error(returnMessage);
+            },
+        });
+    };
+
+    useEffect(() => form.setValue("department_ids", []), [userRoleId]);
 
     return (
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogTrigger asChild>
-                <Button><Plus/> Create</Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px]">
-                <DialogHeader>
-                    <DialogTitle>Create</DialogTitle>
-                    <DialogDescription>
-                        Create new user
-                    </DialogDescription>
-                </DialogHeader>
-                <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)}>
-                        <div className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
+        <MainLayout>
+            <div className={cn("flex justify-center items-center min-h-full")}>
+                <Card className={cn("w-full max-w-[600px] py-5")}>
+                    <CardHeader>
+                        <CardTitle>Create User</CardTitle>
+                        <CardDescription>Create User</CardDescription>
+                    </CardHeader>
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onSubmit)}>
+                            <CardContent className={cn("grid grid-cols-2 gap-4")}>
                                 <FormField
                                     control={form.control}
                                     name="email"
@@ -170,7 +166,7 @@ const CreateUserDialog = () => {
                                                 isClearable={false}
                                                 options={listRoleOptions}
                                                 onValueChange={(value) => field.onChange(value[0])}
-                                                defaultValue={field.value === 0 ? [] : [field.value]}
+                                                value={field.value === 0 ? [] : [field.value]}
                                                 placeholder="Select role"
                                             />
                                             <FormMessage/>
@@ -226,22 +222,16 @@ const CreateUserDialog = () => {
                                     control={form.control}
                                     name="department_ids"
                                     render={({field}) => (
-                                        <FormItem>
+                                        <FormItem className={cn("col-span-full")}>
                                             <FormLabel className={cn("font-bold text-black")}>
                                                 Department <span className="text-red-500"> *</span>
                                             </FormLabel>
                                             <MultiSelect
-                                                isMultiple={roleSelected?.label !== rolesType.student}
-                                                options={listDepartmentOptions}
-                                                loadMore={
-                                                    useCallback(() => {
-                                                        if (listDepartment) {
-                                                            const {total: {limits, pages, total}} = listDepartment;
-                                                            if (pages * limits < total)
-                                                                setDepartmentPage(cur => cur + 1)
-                                                        }
-                                                    }, [listDepartment])
+                                                isMultiple={
+                                                    listRoleOptions.find(item => item.value === userRoleId)?.label !== rolesType.student
                                                 }
+                                                options={listDepartmentOptions}
+                                                loadMore={setPageChange}
                                                 onValueChange={field.onChange}
                                                 value={field.value}
                                                 defaultValue={field.value}
@@ -251,43 +241,24 @@ const CreateUserDialog = () => {
                                         </FormItem>
                                     )}
                                 />
-                                <div className={cn("flex items-end")}>
-                                    <FormField
-                                        control={form.control}
-                                        name="active"
-                                        render={({field}) => (
-                                            <FormItem
-                                                className={cn(
-                                                    "flex flex-row items-center justify-between",
-                                                    "px-3 py-1 w-full"
-                                                )}
-                                            >
-                                                <div>
-                                                    <FormLabel className="font-bold text-black">Active</FormLabel>
-                                                </div>
-                                                <div>
-                                                    <FormControl>
-                                                        <Switch
-                                                            checked={field.value}
-                                                            onCheckedChange={field.onChange}
-                                                            aria-readonly
-                                                        />
-                                                    </FormControl>
-                                                </div>
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
-                            </div>
-                            <div className={cn("flex justify-end")}>
-                                <Button disabled={isPending} type="submit">Save</Button>
-                            </div>
-                        </div>
-                    </form>
-                </Form>
-            </DialogContent>
-        </Dialog>
+                            </CardContent>
+                            <CardFooter className="flex justify-center gap-3">
+                                <Button
+                                    disabled={isPending}
+                                    variant="outline"
+                                    type="reset"
+                                    onClick={() => router.push(clientRoutes.user.list.path)}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button disabled={isPending} type="submit">Submit</Button>
+                            </CardFooter>
+                        </form>
+                    </Form>
+                </Card>
+            </div>
+        </MainLayout>
     )
 }
 
-export default CreateUserDialog;
+export default CreateDepartment;

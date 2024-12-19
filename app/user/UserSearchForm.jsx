@@ -125,7 +125,7 @@ const UserSearchForm = ({onChangeFilter}) => {
                                         name="role_id"
                                         render={({field}) => (
                                             <FormItem>
-                                                <FormLabel className={cn("font-bold")}>Status</FormLabel>
+                                                <FormLabel className={cn("font-bold")}>Role</FormLabel>
                                                 <MultiSelect
                                                     options={listRoleOptions}
                                                     onValueChange={field.onChange}
@@ -146,7 +146,6 @@ const UserSearchForm = ({onChangeFilter}) => {
                                                     onValueChange={field.onChange}
                                                     defaultValue={field.value}
                                                     placeholder="Select status"
-                                                    variant="inverted"
                                                 />
                                             </FormItem>
                                         )}

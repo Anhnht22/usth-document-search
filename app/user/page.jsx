@@ -4,7 +4,7 @@ import MainLayout from "@/components/commons/MainLayout";
 import {cn} from "@/lib/utils";
 import {Typography} from "@/components/ui/typography";
 import {Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
-import {CheckCircle2, EllipsisVertical, LockKeyhole, Pencil, Trash2, XCircle} from "lucide-react";
+import {CheckCircle2, EllipsisVertical, KeyRound, LockKeyhole, Pencil, Plus, Trash2, XCircle} from "lucide-react";
 import {useEffect, useState} from "react";
 import {omit} from "lodash";
 import {useUser} from "@/hook/useUsers";
@@ -13,11 +13,12 @@ import UserSearchForm from "@/app/user/UserSearchForm";
 import {useRole} from "@/hook/useRole";
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu";
 import {Button} from "@/components/ui/button";
-import CreateUserDialog from "@/app/user/CreateUserDialog";
 import DeactivateUserDialog from "@/app/user/DeactivateUserDialog";
 import DeleteUserDialog from "@/app/user/DeleteUserDialog";
-import UpdateUserDialog from "@/app/user/UpdateUserDialog";
 import {Badge} from "@/components/ui/badge";
+import Link from "next/link";
+import clientRoutes from "@/routes/client";
+import UpdatePasswordUserDialog from "@/app/user/ResetPasswordUserDialog";
 
 const ListUser = () => {
     const [page, setPage] = useState(1);
@@ -50,11 +51,15 @@ const ListUser = () => {
     return (
         <MainLayout>
             <div className={cn("flex gap-3 h-full")}>
-                <div className="flex-1 py-3 pl-3 flex flex-col h-full">
+                <div className="flex-1 py-3 pl-3 flex flex-col h-full overflow-auto">
                     <div className={cn("flex justify-between")}>
                         <Typography variant="h2" className={cn("mb-4")}>User</Typography>
                         <div className={cn("space-x-3")}>
-                            <CreateUserDialog/>
+                            <Button asChild>
+                                <Link href={clientRoutes.user.create.path}>
+                                    <Plus/> Create
+                                </Link>
+                            </Button>
                         </div>
                     </div>
                     <div className={cn("flex-1 overflow-auto")}>
@@ -71,11 +76,11 @@ const ListUser = () => {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {listData?.map((item) => {
+                                {listData?.map((item, index) => {
                                     const {user_id, username, email, role_id, active, department} = item;
                                     return (
                                         <TableRow key={user_id}>
-                                            <TableCell>{user_id}</TableCell>
+                                            <TableCell>{(page - 1) * limits + index + 1}</TableCell>
                                             <TableCell>{username}</TableCell>
                                             <TableCell>{email}</TableCell>
                                             <TableCell>{listRole?.data?.find(({role_id: roleId}) => roleId === role_id)?.role_name}</TableCell>
@@ -124,7 +129,7 @@ const ListUser = () => {
                                                 </div>
                                             </TableCell>
                                             <TableCell>
-                                                <DropdownMenu>
+                                                <DropdownMenu modal={false}>
                                                     <DropdownMenuTrigger asChild>
                                                         <Button variant="ghost" className="h-8 w-8 p-0">
                                                             <span className="sr-only">Open menu</span>
@@ -133,13 +138,22 @@ const ListUser = () => {
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end">
                                                         <DropdownMenuItem
+                                                            asChild
+                                                            className={cn("hover:cursor-pointer")}
+                                                        >
+                                                            <Link
+                                                                href={clientRoutes.user.update.path.replace(":id", user_id)}>
+                                                                <Pencil/> Update
+                                                            </Link>
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem
                                                             className={cn("hover:cursor-pointer")}
                                                             onClick={() => {
                                                                 setSelectedItem(item);
                                                                 setIsOpenUpdateDialog(true)
                                                             }}
                                                         >
-                                                            <Pencil/> Update
+                                                            <KeyRound/> Change password
                                                         </DropdownMenuItem>
                                                         <DropdownMenuItem
                                                             className={cn("hover:cursor-pointer")}
@@ -181,7 +195,7 @@ const ListUser = () => {
                 <UserSearchForm onChangeFilter={setFilter}/>
             </div>
 
-            <UpdateUserDialog
+            <UpdatePasswordUserDialog
                 selectedItem={selectedItem}
                 isOpen={isOpenUpdateDialog}
                 onOpenChange={setIsOpenUpdateDialog}

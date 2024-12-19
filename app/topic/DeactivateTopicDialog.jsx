@@ -17,7 +17,7 @@ const DeactivateTopicDialog = ({selectedItem, isOpen, onOpenChange}) => {
     const {
         topic_id,
         topic_name,
-        topic_active,
+        active,
         subject_name,
         subject_id
     } = useMemo(() => selectedItem || {}, [selectedItem]);
@@ -30,7 +30,7 @@ const DeactivateTopicDialog = ({selectedItem, isOpen, onOpenChange}) => {
             params: {
                 topic_name: topic_name,
                 subject_id: subject_id,
-                active: topic_active,
+                active: active,
                 ...params
             }
         };
@@ -57,10 +57,10 @@ const DeactivateTopicDialog = ({selectedItem, isOpen, onOpenChange}) => {
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>
-                        {topic_active ? "Deactivate" : "Activate"}
+                        {active ? "Deactivate" : "Activate"}
                     </DialogTitle>
                     <DialogDescription>
-                        Are you sure you want to {topic_active ? "deactivate" : "activate"}
+                        Are you sure you want to {active ? "deactivate" : "activate"}
                         <span className={cn("font-bold")}> {topic_name}</span>?
                     </DialogDescription>
                 </DialogHeader>
@@ -70,7 +70,7 @@ const DeactivateTopicDialog = ({selectedItem, isOpen, onOpenChange}) => {
                     </Button>
                     <Button
                         disabled={updateTopicMutation.isPending}
-                        onClick={() => updateDepartment(topic_id, selectedItem, {active: topic_active ? 0 : 1})}
+                        onClick={() => updateDepartment(topic_id, selectedItem, {active: active ? 0 : 1})}
                     >
                         Xác nhận
                     </Button>
