@@ -14,6 +14,7 @@ import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/
 import {cn} from "@/lib/utils";
 import {EyeIcon, EyeOffIcon} from "lucide-react";
 import md5 from 'md5';
+import {rolesType} from "@/roles/constants";
 
 const formSchema = z.object({
     username: z.string().min(1, {
@@ -43,11 +44,16 @@ export default function LoginPage() {
         login({
             ...data,
             password: md5(data.password)
-        }, async (response, error) => {
+        }, (response, error) => {
             if (error) {
                 form.setError("password", {message: "Wrong username or password!"});
             } else {
-                await router.push(clientRoutes.home.path);
+                const {userData} = response;
+                if (userData.role === rolesType.student) {
+                    router.push(clientRoutes.documentSearch.listDepartment.path);
+                } else {
+                    router.push(clientRoutes.home.path);
+                }
             }
         });
     }
