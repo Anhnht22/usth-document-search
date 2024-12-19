@@ -5,7 +5,7 @@ import {cn} from "@/lib/utils";
 import {Button} from "@/components/ui/button";
 import {usePathname} from "next/navigation";
 import {useEffect, useMemo, useState} from "react";
-import {Building2, ChevronLeft, ChevronRight, Files, Home, Lightbulb, Users, WholeWord} from "lucide-react";
+import {Building2, ChevronLeft, ChevronRight, Files, FileText, Home, Lightbulb, Users, WholeWord} from "lucide-react";
 import Link from "next/link";
 import logo from "@/public/logo.png";
 import Image from "next/image";
@@ -15,18 +15,20 @@ import {useAuth} from "@/provider/AuthProvider";
 const menuItems = [
     {icon: Home, value: clientRoutes.home},
     {icon: Users, value: clientRoutes.user.list},
-    {icon: Files, value: clientRoutes.document.list},
     {icon: Building2, value: clientRoutes.department.list},
+    {icon: Files, value: clientRoutes.subject.list},
     {icon: Lightbulb, value: clientRoutes.topic.list},
     {icon: WholeWord, value: clientRoutes.keyword.list},
-    // {
-    //
-    //     icon: FileText,
-    //     value: {title: "Reports"},
-    //     subItems: [
-    //         {value: {title: "Report 1", path: "/report"}},
-    //     ]
-    // },
+    {icon: Files, value: clientRoutes.document.list},
+    {icon: Files, value: clientRoutes.documentSearch.listDepartment},
+    {
+
+        icon: FileText,
+        value: {title: "Reports"},
+        subItems: [
+            {value: {title: "Report 1", path: "/report"}},
+        ]
+    },
 ]
 
 const LeftToolbar = () => {
@@ -81,8 +83,8 @@ const LeftToolbar = () => {
                 className={cn("absolute h-[100dvh] w-[var(--left-toolbar-width)]",
                     "top-0 bg-white shadow bg-background overflow-hidden",
                     "transition-all duration-300 flex flex-col px-2 pb-2",
-                )}>
-
+                )}
+            >
                 <div className={cn("h-[var(--header-height)] flex justify-center items-center pt-1")}>
                     <Image
                         src={logo ?? ""}

@@ -3,7 +3,7 @@
  */
 
 import * as React from "react";
-import {useEffect, useMemo} from "react";
+import {useEffect} from "react";
 import {cva} from "class-variance-authority";
 import {CheckIcon, ChevronDown, Plus, WandSparkles, XCircle, XIcon} from "lucide-react";
 
@@ -14,7 +14,6 @@ import {Popover, PopoverContent, PopoverTrigger,} from "@/components/ui/popover"
 import {Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList,} from "@/components/ui/command";
 import {Separator} from "@radix-ui/react-select";
 import {useInView} from "react-intersection-observer";
-import {v4} from "uuid";
 
 /**
  * Variants for the multi-select component to handle different styles.
@@ -60,6 +59,7 @@ export const MultiSelect = React.forwardRef(
             isClearable = true,
             className,
             loadMore,
+            onFilter,
             ...props
         },
         ref
@@ -69,7 +69,6 @@ export const MultiSelect = React.forwardRef(
         const [isAnimating, setIsAnimating] = React.useState(false);
         const [isCreating, setIsCreating] = React.useState(false);
 
-        const id = useMemo(() => v4(), []);
         const {ref: inViewRef, inView} = useInView();
 
         useEffect(() => {
@@ -79,7 +78,9 @@ export const MultiSelect = React.forwardRef(
         }, [value]);
 
         const handleInputKeyDown = (event) => {
-            if (event.key === "Enter") {
+            if (onFilter) {
+                onFilter(event.currentTarget.value);
+            } else if (event.key === "Enter") {
                 setIsPopoverOpen(true);
             } else if (event.key === "Backspace" && !event.currentTarget.value) {
                 const newSelectedValues = [...selectedValues];
@@ -137,11 +138,7 @@ export const MultiSelect = React.forwardRef(
         }
 
         useEffect(() => {
-            console.log("inView: ", inView);
-            if (isPopoverOpen && inView && loadMore) {
-                console.log("Load more");
-                loadMore()
-            }
+            if (isPopoverOpen && inView && loadMore) loadMore()
         }, [inView, isPopoverOpen, loadMore])
 
         return (
@@ -267,7 +264,7 @@ export const MultiSelect = React.forwardRef(
                         )}
                         <CommandList>
                             <CommandEmpty>No results found.</CommandEmpty>
-                            <CommandGroup id={id}>
+                            <CommandGroup>
                                 {isMultiple && (
                                     <CommandItem key="all" onSelect={toggleAll} className="cursor-pointer">
                                         <div

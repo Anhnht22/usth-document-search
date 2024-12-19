@@ -1,8 +1,10 @@
-import {File, UploadCloud, X} from 'lucide-react'
+import {UploadCloud, X} from 'lucide-react'
 import {cn} from "@/lib/utils"
 import {Button} from "@/components/ui/button"
 import {useFileUpload} from "@/hook/useFileUpload";
+import * as React from "react";
 import {useEffect} from "react";
+import ThumbDoc from "@/components/commons/ThumbDoc";
 
 export function FileUpload({limit = 1, onFilesChange}) {
     const {files, getRootProps, getInputProps, isDragActive, removeFile} = useFileUpload()
@@ -32,10 +34,14 @@ export function FileUpload({limit = 1, onFilesChange}) {
             {files.length > 0 && (
                 <ul className="mt-2 space-y-2">
                     {files.map((file) => (
-                        <li key={file.name} className="flex items-center justify-between p-2 pr-8 bg-muted rounded-md relative">
+                        <li key={file.name}
+                            className="flex items-center justify-between p-2 pr-8 bg-muted rounded-md relative">
                             <div className="flex items-center flex-grow w-full">
-                                <File className="h-5 w-5 mr-2 text-muted-foreground"/>
-                                <span className="text-sm truncate block w-full whitespace-nowrap text-ellipsis">{file.name}</span>
+                                <div className={cn("w-[35px]")}>
+                                    {file && <ThumbDoc file={file}/>}
+                                </div>
+                                <span
+                                    className="text-sm truncate block w-full whitespace-nowrap text-ellipsis">{file.name}</span>
                             </div>
                             <Button
                                 type="button"

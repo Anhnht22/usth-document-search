@@ -4,7 +4,6 @@ import {useEffect, useState} from "react";
 import PDFViewer from "@/components/commons/PDFPreviewWrapper";
 
 const PreviewFile = ({fileUrl}) => {
-    console.log(fileUrl)
     const [fileType, setFileType] = useState("");
 
     useEffect(() => {
