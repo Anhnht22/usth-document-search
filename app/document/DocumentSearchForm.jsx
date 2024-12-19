@@ -73,13 +73,15 @@ const UserSearchForm = ({onChangeFilter}) => {
     const [date, setDate] = useState()
 
     return (
-        <div className={cn(
-            "h-full relative",
-            "shrink-0 transition-all duration-300 ease-in-out",
-            isSidebarVisible ? "w-80" : "w-10"
-        )}
-             onMouseEnter={() => setIsHoveringSidebar(true)}
-             onMouseLeave={() => setIsHoveringSidebar(false)}>
+        <div
+            className={cn(
+                "h-full relative",
+                "shrink-0 transition-all duration-300 ease-in-out",
+                isSidebarVisible ? "w-80" : "w-10"
+            )}
+            onMouseEnter={() => setIsHoveringSidebar(true)}
+            onMouseLeave={() => setIsHoveringSidebar(false)}
+        >
             <Card className={cn(
                 "h-full flex flex-col rounded-none overflow-hidden overflow-y-auto",
                 "transition-all duration-300 ease-in-out",

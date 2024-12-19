@@ -78,7 +78,7 @@ const StatusDocumentUpdate = ({selectedItem}) => {
 
     return (
         <>
-            <DropdownMenu>
+            <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="h-8 w-[80px] p-0 focus-visible:ring-0">
                         <div
