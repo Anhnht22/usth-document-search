@@ -4,18 +4,18 @@ import MainLayout from "@/components/commons/MainLayout";
 import {Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
 import {cn} from "@/lib/utils";
 import {useDepartments} from "@/hook/useDepartments";
-import {CheckCircle2, EllipsisVertical, LockKeyhole, Pencil, Trash2, XCircle} from "lucide-react";
+import {CheckCircle2, EllipsisVertical, LockKeyhole, Pencil, Plus, Trash2, XCircle} from "lucide-react";
 import {useState} from "react";
 import {Button} from "@/components/ui/button";
 import {Typography} from "@/components/ui/typography";
 import {omit} from "lodash";
-import CreateDepartmentDialog from "@/app/department/CreateDepartmentDialog";
 import {Pagination} from "@/components/ui-custom/Pagination";
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu";
-import UpdateDepartmentDialog from "@/app/department/UpdateDepartmentDialog";
 import DepartmentSearchForm from "@/app/department/DepartmentSearchForm";
 import DeactivateConfirmDialog from "@/app/department/DeactivateConfirmDialog";
 import DeleteDepartmentDialog from "@/app/department/DeleteDepartmentDialog";
+import Link from "next/link";
+import clientRoutes from "@/routes/client";
 
 const Department = () => {
     const [page, setPage] = useState(1);
@@ -44,7 +44,11 @@ const Department = () => {
                     <div className={cn("flex justify-between")}>
                         <Typography variant="h2" className={cn("mb-4")}>Department</Typography>
                         <div className={cn("space-x-3")}>
-                            <CreateDepartmentDialog/>
+                            <Button asChild>
+                                <Link href={clientRoutes.department.create.path}>
+                                    <Plus/> Create
+                                </Link>
+                            </Button>
                         </div>
                     </div>
                     <div className={cn("flex-1 overflow-auto")}>
@@ -56,14 +60,15 @@ const Department = () => {
                                     <TableHead className={cn("min-w-[300px]")}>Name</TableHead>
                                     <TableHead className={cn("min-w-[300px]")}>Description</TableHead>
                                     <TableHead className={cn("w-32 text-center")}>Status</TableHead>
+                                    <TableHead></TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {listDepartment?.map((department) => {
+                                {listDepartment?.map((department, index) => {
                                     const {department_id, department_name, description, active} = department
                                     return (
                                         <TableRow key={department_id}>
-                                            <TableCell>{department_id}</TableCell>
+                                            <TableCell>{(page - 1) * limits + index + 1}</TableCell>
                                             <TableCell>{department_name}</TableCell>
                                             <TableCell>{description}</TableCell>
                                             <TableCell>
@@ -76,7 +81,7 @@ const Department = () => {
                                                 </div>
                                             </TableCell>
                                             <TableCell>
-                                                <DropdownMenu>
+                                                <DropdownMenu modal={false}>
                                                     <DropdownMenuTrigger asChild>
                                                         <Button variant="ghost" className="h-8 w-8 p-0">
                                                             <span className="sr-only">Open menu</span>
@@ -85,13 +90,13 @@ const Department = () => {
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end">
                                                         <DropdownMenuItem
+                                                            asChild
                                                             className={cn("hover:cursor-pointer")}
-                                                            onClick={() => {
-                                                                setSelectedItem(department);
-                                                                setIsOpenUpdateDialog(true)
-                                                            }}
                                                         >
-                                                            <Pencil/> Update
+                                                            <Link
+                                                                href={clientRoutes.department.update.path.replace(":id", department_id)}>
+                                                                <Pencil/> Update
+                                                            </Link>
                                                         </DropdownMenuItem>
                                                         <DropdownMenuItem
                                                             className={cn("hover:cursor-pointer")}
@@ -132,12 +137,6 @@ const Department = () => {
 
                 <DepartmentSearchForm onChangeFilter={setFilter}/>
             </div>
-
-            <UpdateDepartmentDialog
-                departmentItem={selectedItem}
-                isOpen={isOpenUpdateDialog}
-                onOpenChange={setIsOpenUpdateDialog}
-            />
 
             <DeactivateConfirmDialog
                 department={selectedItem}
