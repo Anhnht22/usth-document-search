@@ -6,7 +6,7 @@ import envConfig from "@/utils/envConfig";
 import {useLogin} from "@/hook/useUsers";
 import clientRoutes from "@/routes/client";
 import {useRouter} from "next/navigation";
-import {checkTokenExpiry, getCookie} from "@/utils/common";
+import {checkTokenExpiry} from "@/utils/common";
 // Create the context
 const AuthContext = createContext()
 
@@ -38,6 +38,7 @@ export const AuthProvider = ({children}) => {
                 setUserData(dataUser.data);
                 setRole(dataUser.data.role);
 
+                response.userData = dataUser.data;
                 callback?.(response, null);
             },
             onError: (error) => {

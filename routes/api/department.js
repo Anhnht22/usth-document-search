@@ -1,6 +1,4 @@
-import envConfig from "@/utils/envConfig";
-
-const base = envConfig.endPoint + "/department";
+const base = "/department";
 
 const department = {
     list: base + "/", // GET

@@ -14,21 +14,23 @@ class ApiBase {
     }
 
     httpGet(uri, params, options) {
-        // Xử lý query params cho GET request
-        const url = new URL(uri);
+        // Xử lý query params (nếu có)
+        let queryString = "";
         if (params) {
+            const searchParams = new URLSearchParams();
             Object.keys(params).forEach((key) => {
                 if (Array.isArray(params[key])) {
                     params[key].forEach((value) => {
-                        // url.searchParams.append(key + "[]", value);
-                        url.searchParams.append(key, value);
+                        searchParams.append(key, value);
                     });
                 } else {
-                    url.searchParams.append(key, params[key]);
+                    searchParams.append(key, params[key]);
                 }
             });
+            queryString = `?${searchParams.toString()}`;
         }
-        return this.httpRequest(url.toString(), "GET", undefined, options);
+
+        return this.httpRequest(`${uri}${queryString}`, "GET", undefined, options);
     }
 
     httpDelete(uri, options) {
@@ -39,7 +41,7 @@ class ApiBase {
         const authToken = getCookie(envConfig.authToken);
 
         // Xử lý headers
-        const headers = {
+        let headers = {
             ...(authToken && {'Authorization': `${authToken}`}),
         };
 
@@ -50,9 +52,12 @@ class ApiBase {
 
         const body = data instanceof FormData ? data : JSON.stringify(data);
 
-        return fetch(uri, {
+        return fetch(`/api${uri}`, {
             method: method,
-            headers: headers,
+            headers: {
+                ...headers,
+                ...(options && options.headers)
+            },
             ...(method !== "GET" && data ? {body: body} : {}),
             ...options, // Gộp thêm các option bổ sung nếu cần
         }).then(async (response) => {

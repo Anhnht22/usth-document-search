@@ -7,6 +7,16 @@ const user = {
         title: "Topics",
         path: base,
         roles: [rolesType.admin, rolesType.professor]
+    },
+    create: {
+        title: "Topics Create",
+        path: base + "/create",
+        roles: [rolesType.admin, rolesType.professor]
+    },
+    update: {
+        title: "Topics Update",
+        path: base + "/update/:id",
+        roles: [rolesType.admin, rolesType.professor]
     }
 };
 

@@ -3,19 +3,20 @@ import {NextResponse} from "next/server";
 import clientRoutes from "@/routes/client";
 import {checkTokenExpiry} from "@/utils/common";
 import {findRoute} from "@/utils/permission";
-import {rolesType} from "@/roles/constants";
 
 export function middleware(req) {
     // Chuyển hướng nếu người dùng không đăng nhập
     const cookiesToken = req.cookies.get(envConfig.authToken); // Check trạng thái AuthToken đăng nhập trong cookie
     const authToken = cookiesToken ? cookiesToken.value : null;
-    const isValidToken = authToken ? checkTokenExpiry(authToken).isValid : false;
+    const token = authToken ? checkTokenExpiry(authToken) : {};
+    const {isValid, message, data} = token;
+    const {role} = data || {};
 
     const pathname = req.nextUrl.pathname;
     const isLoginPage = pathname === clientRoutes.user.login.path;
 
     let redirectUrl = null;
-    if (isValidToken) {
+    if (isValid) {
         if (isLoginPage) { // Nếu token hợp lệ và đang ở trang login thì chuyển hướng về trang chính
             redirectUrl = clientRoutes.home.path;
         } else { // Kiểm tra quyền truy cập
@@ -23,7 +24,6 @@ export function middleware(req) {
              * TODO: Tạm thời để mặc định quyền amdin
              * @type {string}
              */
-            const role = rolesType.admin; //req.cookies.get(envConfig.authRole)?.value;
             const currentRoute = findRoute(clientRoutes, pathname);
 
             if (!currentRoute) { // Nếu không tìm thấy route, chuyển hướng đến 404
@@ -50,5 +50,5 @@ export function middleware(req) {
 }
 
 export const config = {
-    matcher: '/((?!api|_next/static|_next/image|favicon.ico).*)', // Định nghĩa các route mà middleware áp dụng
+    matcher: '/((?!api/|_next/static|_next/image|favicon.ico).*)', // Định nghĩa các route mà middleware áp dụng
 };

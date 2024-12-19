@@ -1,6 +1,4 @@
-import envConfig from "@/utils/envConfig";
-
-const base = envConfig.endPoint + "/keyword";
+const base = "/keyword";
 
 const keyword = {
     list: base,

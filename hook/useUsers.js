@@ -19,6 +19,11 @@ const updateUser = async ({id, params}) => {
     return await response.json();
 };
 
+const updatePasswordUser = async ({id, params}) => {
+    const response = await new ApiBase().httpPut(apiRoutes.user.updatePassword.replace(":id", id), params);
+    return await response.json();
+};
+
 const deletedPermanentlyUser = async (id) => {
     const response = await new ApiBase().httpDelete(apiRoutes.user.deletePermanently.replace(":id", id));
     return await response.json();
@@ -74,6 +79,18 @@ const useUpdateUser = () => {
     });
 };
 
+const useUpdatePasswordUser = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: updatePasswordUser,
+        onSuccess: () => {
+            queryClient.invalidateQueries([queryKeyUsers]);
+        },
+        onError: (error) => {
+        },
+    });
+};
+
 const useDeletePermanentlyUser = () => {
     const queryClient = useQueryClient();
     return useMutation({
@@ -94,5 +111,6 @@ export {
     fetchUser,
     useUser,
     useUpdateUser,
+    useUpdatePasswordUser,
     useDeletePermanentlyUser
 }

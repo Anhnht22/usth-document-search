@@ -1,6 +1,4 @@
-import envConfig from "@/utils/envConfig";
-
-const base = envConfig.endPoint + "/topic";
+const base = "/topic";
 
 const topic = {
     list: base,

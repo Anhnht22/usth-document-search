@@ -1,6 +1,4 @@
-import envConfig from "@/utils/envConfig";
-
-const base = envConfig.endPoint + "/user";
+const base = "/user";
 
 const user = {
     login: base + "/login",
@@ -8,6 +6,7 @@ const user = {
     create: base + "/create",
     deletePermanently: base + "/deleted-permanently/:id",
     update: base + "/update/:id",
+    updatePassword: base + "/update-password/:id",
 };
 
 export default user;

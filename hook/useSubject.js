@@ -19,6 +19,11 @@ const updateSubject = async ({id, params}) => {
     return await response.json();
 };
 
+const deletedSubject = async (id) => {
+    const response = await new ApiBase().httpDelete(apiRoutes.subject.delete.replace(":id", id));
+    return await response.json();
+};
+
 const deletedPermanentlySubject = async (id) => {
     const response = await new ApiBase().httpDelete(apiRoutes.subject.deletePermanently.replace(":id", id));
     return await response.json();
@@ -43,10 +48,40 @@ const useSubject = (params) => {
     })
 }
 
+const useSubjectByUser = (params) => {
+    return useQuery({
+        queryKey: params ? [queryKeySubject, JSON.stringify(params)] : null, // Không tạo queryKey nếu params null
+        queryFn: () => (params ? fetchSubject(params) : Promise.resolve(null)), // Không fetch nếu params null
+        enabled: !!params, // Tắt tự động fetch nếu params không tồn tại
+    });
+}
+
+const useSubjectMutation = (params) => {
+    return useMutation({
+        mutationFn: fetchSubject,
+        onSuccess: () => {
+        },
+        onError: (error) => {
+        },
+    });
+}
+
 const useUpdateSubject = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: updateSubject,
+        onSuccess: () => {
+            queryClient.invalidateQueries([queryKeySubject]);
+        },
+        onError: (error) => {
+        },
+    });
+};
+
+const useDeleteSubject = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: deletedSubject,
         onSuccess: () => {
             queryClient.invalidateQueries([queryKeySubject]);
         },
@@ -72,6 +107,9 @@ export {
     useCreateSubject,
     fetchSubject,
     useSubject,
+    useSubjectByUser,
+    useSubjectMutation,
     useUpdateSubject,
+    useDeleteSubject,
     useDeletePermanentlySubject
 }

@@ -5,6 +5,8 @@ import {rolesType} from "@/roles/constants";
 import document from "@/routes/client/document";
 import topic from "@/routes/client/topic";
 import keyword from "@/routes/client/keyword";
+import documentSearch from "@/routes/client/documentSearch";
+import subject from "@/routes/client/subject";
 
 // Phân quyền có được vào trang đó hay không
 const clientRoutes = {
@@ -19,6 +21,8 @@ const clientRoutes = {
     document: document,
     topic: topic,
     keyword: keyword,
+    documentSearch: documentSearch,
+    subject: subject,
 }
 
 export default clientRoutes;

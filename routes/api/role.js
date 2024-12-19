@@ -1,6 +1,4 @@
-import envConfig from "@/utils/envConfig";
-
-const base = envConfig.endPoint + "/role";
+const base = "/role";
 
 const role = {
     list: base

@@ -1,27 +1,23 @@
 import {rolesType} from "@/roles/constants";
 
-const base = "/user";
+const base = "/subject";
 
-const user = {
-    login: {
-        title: "Login",
-        path: "/login"
-    },
+const subject = {
     list: {
-        title: "Users",
+        title: "Subject",
         path: base,
         roles: [rolesType.admin, rolesType.professor]
     },
     create: {
-        title: "Users Create",
+        title: "Subject Create",
         path: base + "/create",
         roles: [rolesType.admin, rolesType.professor]
     },
     update: {
-        title: "Users Update",
+        title: "Subject Update",
         path: base + "/update/:id",
         roles: [rolesType.admin, rolesType.professor]
     }
 };
 
-export default user;
+export default subject;
