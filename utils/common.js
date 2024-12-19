@@ -57,16 +57,3 @@ export const convertFileName = (fileName) => {
         .replace(/đ/g, "d") // Thay "đ" bằng "d"
         .replace(/[^\x00-\x7F]/g, "") // Loại bỏ ký tự không phải ASCII,;
 }
-
-export const convertFileName = (fileName) => {
-    return fileName
-        .toLowerCase() // Chuyển về chữ thường
-        .split(" ") // Tách bằng khoảng trắng
-        .join("-") // Thay khoảng trắng bằng dấu gạch ngang
-        .split("_") // Tách bằng dấu gạch dưới
-        .join("-") // Thay dấu gạch dưới bằng gạch ngang
-        .normalize("NFD") // Chuẩn hóa Unicode (NFD)
-        .replace(/[\u0300-\u036f]/g, "") // Loại bỏ dấu tiếng Việt
-        .replace(/đ/g, "d") // Thay "đ" bằng "d"
-        .replace(/[^\x00-\x7F]/g, "") // Loại bỏ ký tự không phải ASCII,;
-}
