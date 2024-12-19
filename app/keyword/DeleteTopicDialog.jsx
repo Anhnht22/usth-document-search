@@ -26,7 +26,6 @@ const DeleteTopicDialog = ({selectedItem, isOpen, onOpenChange}) => {
         deleteTopicMutation.mutate(id, {
                 onSuccess: (response) => {
                     const {returnCode} = response
-                    console.log(returnCode)
                     if (returnCode === 200) {
                         onOpenChange(false);
                         toast.success(
