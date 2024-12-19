@@ -3,7 +3,7 @@
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,} from "@/components/ui/tooltip"
 import {cn} from "@/lib/utils";
 import {Button} from "@/components/ui/button";
-import {usePathname} from "next/navigation";
+import {usePathname, useSearchParams} from "next/navigation";
 import {useEffect, useMemo, useState} from "react";
 import {Building2, ChevronLeft, ChevronRight} from "lucide-react";
 import Link from "next/link";
@@ -28,6 +28,11 @@ import clientRoutes from "@/routes/client";
 
 const DocumentSearchLeftToolbar = () => {
     const {role} = useAuth();
+    const searchParams = useSearchParams();
+
+    const subject_id = searchParams.getAll('subject_id') || []
+    const department_id = searchParams.getAll('department_id') || []
+    const topic_id = searchParams.getAll('topic_id') || []
 
     const [menuItems, setMenuItems] = useState([]);
 
@@ -106,7 +111,7 @@ const DocumentSearchLeftToolbar = () => {
                     const {department_id} = department[i];
                     if (department_id === departmentRespItem.department_id) {
                         acc.push({
-                            icon: Building2,
+                            // icon: Building2,
                             value: {
                                 title: subject_name,
                                 path: clientRoutes.documentSearch.listTopic.path + `?department_id=${department_id}&subject_id=${subject_id}`
@@ -131,7 +136,7 @@ const DocumentSearchLeftToolbar = () => {
             }, [])
 
             menuItems.push({
-                icon: Building2,
+                // icon: Building2,
                 value: {
                     title: departmentRespItem.department_name,
                     path: subjectItem?.length > 0 ? clientRoutes.documentSearch.listSubject.path + `?department_id=${departmentRespItem.department_id}` : null
@@ -142,14 +147,13 @@ const DocumentSearchLeftToolbar = () => {
 
         setMenuItems(menuItems);
     }, [departmentResp, subjectResp, topicResp]);
-    console.log("menuItems: ", menuItems)
 
     return (
         <TooltipProvider>
             <div
                 className={cn("absolute h-[100dvh] w-[var(--left-toolbar-width)]",
-                    "top-0 bg-white shadow bg-background overflow-hidden",
-                    "transition-all duration-300 flex flex-col px-2 pb-2",
+                    "top-0 shadow bg-background overflow-hidden",
+                    "transition-all duration-300 flex flex-col",// px-2 pb-2
                 )}>
 
                 <div className={cn("h-[var(--header-height)] flex justify-center items-center pt-1")}>
@@ -160,9 +164,8 @@ const DocumentSearchLeftToolbar = () => {
                     />
                 </div>
 
-                <nav className="flex-1 pt-3 overflow-y-auto overflow-x-hidden">
+                <nav className="flex-1 mt-2 pt-3 overflow-y-auto overflow-x-hidden  ">
                     {menuItemsByRole.map(({value, subItems, ...itemMenu}) => {
-                        console.log("value: ", itemMenu)
                         return (
                             <div key={value.title} className={cn("[&:not(:first-child)]:mt-2")}>
                                 <Tooltip delayDuration={100}>
@@ -178,7 +181,7 @@ const DocumentSearchLeftToolbar = () => {
                                             {isExpanded && (
                                                 <Link href={value.path ? value.path : "#"}
                                                       className={cn(
-                                                          "flex-1 line-clamp-2 h-full",
+                                                          "flex-1 line-clamp-2 h-full font-bold text-[#ff6500]",
                                                           value.path ? "hover:underline" : ""
                                                       )}
                                                 >
@@ -233,7 +236,12 @@ const DocumentSearchLeftToolbar = () => {
                     })}
                 </nav>
 
-                <div className={cn("pt-2 flex", isExpanded ? "justify-end" : "justify-center")}>
+                <div
+                    className={cn(
+                        "pt-2 flex",
+                        isExpanded ? "justify-end" : "justify-center"
+                    )}
+                >
                     <Button variant="ghost" size="icon" onClick={toggleSidebar}>
                         {isExpanded ? <ChevronLeft/> : <ChevronRight/>}
                     </Button>

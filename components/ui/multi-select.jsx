@@ -60,6 +60,7 @@ export const MultiSelect = React.forwardRef(
             className,
             loadMore,
             onFilter,
+            onAsyncFilter,
             ...props
         },
         ref
@@ -77,7 +78,7 @@ export const MultiSelect = React.forwardRef(
             }
         }, [value]);
 
-        const handleInputKeyDown = (event) => {
+        const handleInputKeyUp = (event) => {
             if (onFilter) {
                 onFilter(event.currentTarget.value);
             } else if (event.key === "Enter") {
@@ -248,7 +249,7 @@ export const MultiSelect = React.forwardRef(
                     onEscapeKeyDown={() => setIsPopoverOpen(false)}
                 >
                     <Command>
-                        <CommandInput placeholder="Search..." onKeyDown={handleInputKeyDown}/>
+                        <CommandInput placeholder="Search..." onKeyUp={handleInputKeyUp}/>
                         {isCreate && (
                             isCreating
                                 ? CreateComponent

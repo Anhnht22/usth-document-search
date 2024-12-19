@@ -3,9 +3,7 @@ import {useEffect, useMemo, useRef, useState} from "react";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
 import {ChevronRight, Filter} from "lucide-react";
-import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
-import {Input} from "@/components/ui/input";
-import DateRangePicker from "@/components/ui-custom/DateRangePicker";
+import {Form, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 import {useForm, useWatch} from "react-hook-form";
 import {debounce, isEqual} from "lodash";
 import {useDepartments} from "@/hook/useDepartments";
@@ -13,11 +11,14 @@ import {useSubject} from "@/hook/useSubject";
 import {useTopic} from "@/hook/useTopic";
 import {MultiSelect} from "@/components/ui/multi-select";
 import {useSearchParams} from "next/navigation";
+import {useKeyword} from "@/hook/useKeyword";
+import useDebounce from "@/hook/useDebounce";
 
 const defaultValues = {
     subject_id: [],
     department_id: [],
     topic_id: [],
+    keyword_id: [],
 }
 
 const SearchForm = ({onChangeFilter}) => {
@@ -26,6 +27,7 @@ const SearchForm = ({onChangeFilter}) => {
     const subject_id = searchParamsUrl.getAll('subject_id') || []
     const department_id = searchParamsUrl.getAll('department_id') || []
     const topic_id = searchParamsUrl.getAll('topic_id') || []
+    const keyword_id = searchParamsUrl.getAll('keyword_id') || []
 
     const form = useForm({
         defaultValues: defaultValues
@@ -67,6 +69,13 @@ const SearchForm = ({onChangeFilter}) => {
     }, [topic_id]);
 
     useEffect(() => {
+        if (form.getValues().keyword_id?.length <= 0 && filledFormRef.current.indexOf('keyword_id') === -1) {
+            form.setValue("keyword_id", keyword_id.map(item => Number(item)))
+            filledFormRef.current.push('keyword_id')
+        }
+    }, [keyword_id]);
+
+    useEffect(() => {
         if (!isEqual(previousParams.current, searchParams)) {
             debouncedSetFilter(searchParams);
             previousParams.current = searchParams; // Cập nhật giá trị cũ
@@ -93,6 +102,12 @@ const SearchForm = ({onChangeFilter}) => {
         // department_id: department_id,
         // subject_id: subject_id,
         order: JSON.stringify({"t.topic_id": "desc"})
+    });
+
+    const {data: keywordResp} = useKeyword({
+        limit: -999,
+        active: 1,
+        order: JSON.stringify({"t.keyword_id": "desc"})
     });
 
     return (
@@ -200,6 +215,28 @@ const SearchForm = ({onChangeFilter}) => {
                                                     onValueChange={field.onChange}
                                                     value={field.value}
                                                     placeholder="Select topic"
+                                                />
+                                                <FormMessage/>
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="keyword_id"
+                                        render={({field}) => (
+                                            <FormItem>
+                                                <FormLabel className={cn("font-bold text-black")}>
+                                                    Keyword
+                                                </FormLabel>
+                                                <MultiSelect
+                                                    isClearable={true}
+                                                    options={keywordResp?.data?.map(({keyword_id, keyword}) => ({
+                                                        value: keyword_id,
+                                                        label: keyword
+                                                    })) ?? []}
+                                                    onValueChange={field.onChange}
+                                                    value={field.value}
+                                                    placeholder="Select keyword"
                                                 />
                                                 <FormMessage/>
                                             </FormItem>
