@@ -1,9 +1,10 @@
 import MainLayout from "@/components/commons/MainLayout";
+import MasterBoard from "@/app/MasterBoard";
 
 export default function Home() {
     return (
         <MainLayout>
-            <h1>Home</h1>
+            <MasterBoard/>
         </MainLayout>
     );
 }
