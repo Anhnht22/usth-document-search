@@ -36,6 +36,14 @@ const useDepartments = (params) => {
     })
 }
 
+const useDepartmentsByUser = (params) => {
+    return useQuery({
+        queryKey: params ? [queryKeyDepartments, JSON.stringify(params)] : null, // Không tạo queryKey nếu params null
+        queryFn: () => (params ? fetchDepartments(params) : Promise.resolve(null)), // Không fetch nếu params null
+        enabled: !!params, // Tắt tự động fetch nếu params không tồn tại
+    });
+}
+
 const useCreateDepartment = () => {
     const queryClient = useQueryClient();
     return useMutation({
@@ -87,6 +95,7 @@ const useUpdateDepartment = () => {
 export {
     queryKeyDepartments,
     useDepartments,
+    useDepartmentsByUser,
     useCreateDepartment,
     useDeleteDepartment,
     useDeletePermanentlyDepartment,
