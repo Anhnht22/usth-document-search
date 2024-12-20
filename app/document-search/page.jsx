@@ -14,6 +14,7 @@ import ThumbDoc from "@/components/commons/ThumbDoc";
 import {convertFileName} from "@/utils/common";
 import ShowType from "@/app/document-search/ShowType";
 import SearchForm from "@/app/document-search/SearchForm";
+import _ from "lodash"
 
 const DocumentSearch = () => {
     const router = useRouter();
@@ -84,14 +85,21 @@ const DocumentSearch = () => {
 
         setPage(1)
         setDocumentAll([])
-        setParams({
+
+        const newParams = {
             ...defaultParamsRef.current,
             ...filter
-        })
+        }
+
+        defaultParamsRef.current = newParams
+        setParams(newParams)
     }
 
     useEffect(() => {
-        setParams(prev => ({...prev, page: page}))
+        const {page: curPage} = defaultParamsRef.current;
+        if (curPage && curPage !== page) {
+            setParams(prev => ({...prev, page: page}))
+        }
     }, [page]);
 
     const viewListData = useMemo(() => documentAll.map((item) => {

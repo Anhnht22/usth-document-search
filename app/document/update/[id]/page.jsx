@@ -17,7 +17,7 @@ import {useCallback, useEffect, useMemo, useState} from "react";
 import {v4} from "uuid";
 import {useParams, useRouter} from "next/navigation";
 import {Textarea} from "@/components/ui/textarea";
-import {useTopic} from "@/hook/useTopic";
+import {useTopicParams} from "@/hook/useTopic";
 import {useKeyword} from "@/hook/useKeyword";
 import {useDocument, useUpdateDocument} from "@/hook/useDocument";
 import {MultiSelect} from "@/components/ui/multi-select";
@@ -25,6 +25,8 @@ import CreateKeywordDocument from "@/app/document/CreateKeywordDocument";
 import {FileUpload} from "@/components/ui-custom/FileUpload";
 import ThumbDoc from "@/components/commons/ThumbDoc";
 import slugify from "slugify";
+import {useDepartments} from "@/hook/useDepartments";
+import {useSubjectByUser} from "@/hook/useSubject";
 
 const formSchema = z.object({
     title: z.string().min(1, {
@@ -32,6 +34,12 @@ const formSchema = z.object({
     }),
     description: z.string().min(1, {
         message: "Description is required!",
+    }),
+    department_id: z.array(z.number()).min(1, {
+        message: "Department is required!",
+    }),
+    subject_id: z.array(z.number()).min(1, {
+        message: "Subject is required!",
     }),
     topic_id: z.array(z.number()).min(1, {
         message: "Topic is required!",
@@ -74,7 +82,17 @@ const UpdateDocument = () => {
             }
         ]
     }*/
-    const {document_id, title, description, active, file_path, topic, keyword} = departmentData?.data?.[0] ?? {};
+    const {
+        document_id,
+        title,
+        description,
+        active,
+        file_path,
+        department,
+        subject,
+        topic,
+        keyword
+    } = departmentData?.data?.[0] ?? {};
 
     const form = useForm({
         resolver: zodResolver(formSchema),
@@ -119,6 +137,14 @@ const UpdateDocument = () => {
                 params[key].forEach((id) => {
                     formData.append("keyword_ids[]", id); // Append từng giá trị
                 });
+            } else if (key === "department_id" && Array.isArray(params[key])) {
+                params[key].forEach((id) => {
+                    formData.append("department_id[]", id); // Append từng giá trị
+                });
+            } else if (key === "subject_id" && Array.isArray(params[key])) {
+                params[key].forEach((id) => {
+                    formData.append("subject_id[]", id); // Append từng giá trị
+                });
             } else if (key === "topic_id" && Array.isArray(params[key])) {
                 params[key].forEach((id) => {
                     formData.append("topic_id[]", id); // Append từng giá trị
@@ -144,12 +170,20 @@ const UpdateDocument = () => {
 
     const [listTopicOptions, setListTopicOptions] = useState([]);
     const [topicPage, setTopicPage] = useState(1);
-    const {data: listTopic} = useTopic({
-        active: 1,
-        limit: 20,
-        page: topicPage,
-        order: JSON.stringify({"t.topic_id": "desc"}),
-    });
+    const [searchParamsTopic, setSearchParamsTopic] = useState(null);
+    const {data: listTopic} = useTopicParams(searchParamsTopic);
+
+    useEffect(() => {
+        if (subject && subject.length > 0 && department && department.length > 0)
+            setSearchParamsTopic({
+                active: 1,
+                limit: 20,
+                page: topicPage,
+                department_id: department?.map(item => item.department_id) || [],
+                subject_id: subject?.map(item => item.subject_id) || [],
+                order: JSON.stringify({"t.topic_id": "desc"}),
+            })
+    }, [subject, department]);
 
     useEffect(() => {
         setListTopicOptions(prev =>
@@ -215,6 +249,14 @@ const UpdateDocument = () => {
     useEffect(() => form.setValue("title", title), [title]);
     useEffect(() => form.setValue("description", description), [description]);
     useEffect(() =>
+            form.setValue("department_id", department?.map(item => item.department_id) || []),
+        [department]
+    );
+    useEffect(() =>
+            form.setValue("subject_id", subject?.map(item => item.subject_id) || []),
+        [subject]
+    );
+    useEffect(() =>
             form.setValue("topic_id", topic?.map(item => item.topic_id) || []),
         [topic]
     );
@@ -239,6 +281,77 @@ const UpdateDocument = () => {
             </li>
         </ul>
     ), [fileNew, file_path]);
+
+    const [listDepartmentOptions, setListDepartmentOptions] = useState([]);
+    const [departmentPage, setDepartmentPage] = useState(1);
+    const {data: listDepartment} = useDepartments({
+        active: 1,
+        limit: 20,
+        page: departmentPage,
+        order: JSON.stringify({"t.department_id": "desc"}),
+    });
+
+    useEffect(() => {
+        setListDepartmentOptions(prev =>
+            [
+                ...prev,
+                ...(
+                    listDepartment?.data
+                        ?.filter(({department_id}) => !prev.some(option => option.value === department_id))
+                        .map(({department_id, department_name}) => ({
+                            value: department_id,
+                            label: department_name
+                        })) ?? []
+                )
+            ]
+        )
+    }, [listDepartment]);
+
+    const setPageChangeDepartment = useCallback(() => {
+        if (listDepartment) {
+            const {total: {limits, pages, total}} = listDepartment;
+            if (pages * limits < total) setDepartmentPage(cur => cur + 1)
+        }
+    }, [listDepartment]);
+
+    const [listSubjectOptions, setListSubjectOptions] = useState([]);
+    const [subjectPage, setSubjectPage] = useState(1);
+    const [searchParamsSubject, setSearchParamsSubject] = useState(null);
+    const {data: listSubject} = useSubjectByUser(searchParamsSubject);
+
+    useEffect(() => {
+        if (department && department.length > 0)
+            setSearchParamsSubject({
+                active: 1,
+                limit: 20,
+                page: subjectPage,
+                department_id: department?.map(item => item.department_id) || [],
+                order: JSON.stringify({"t.subject_id": "desc"}),
+            })
+    }, [department]);
+
+    useEffect(() => {
+        setListSubjectOptions(prev =>
+            [
+                ...prev,
+                ...(
+                    listSubject?.data
+                        ?.filter(({subject_id}) => !prev.some(option => option.value === subject_id))
+                        .map(({subject_id, subject_name}) => ({
+                            value: subject_id,
+                            label: subject_name
+                        })) ?? []
+                )
+            ]
+        )
+    }, [listSubject]);
+
+    const setPageChangeSubject = useCallback(() => {
+        if (listSubject) {
+            const {total: {limits, pages, total}} = listSubject;
+            if (pages * limits < total) setSubjectPage(cur => cur + 1)
+        }
+    }, [listSubject]);
 
     return (
         <MainLayout>
@@ -277,6 +390,77 @@ const UpdateDocument = () => {
                                             <FormControl>
                                                 <Textarea placeholder="Description" {...field} />
                                             </FormControl>
+                                            <FormMessage/>
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="department_id"
+                                    render={({field}) => (
+                                        <FormItem>
+                                            <FormLabel className={cn("font-bold text-black")}>
+                                                Department <span className="text-red-500">*</span>
+                                            </FormLabel>
+                                            <MultiSelect
+                                                isClearable={false}
+                                                options={listDepartmentOptions}
+                                                loadMore={setPageChangeDepartment()}
+                                                onValueChange={(value) => {
+                                                    setListSubjectOptions([]);
+                                                    if (value && value.length > 0) {
+                                                        setSearchParamsSubject({
+                                                            active: 1,
+                                                            limit: 20,
+                                                            page: subjectPage,
+                                                            department_id: value,
+                                                            order: JSON.stringify({"t.subject_id": "desc"}),
+                                                        })
+                                                    } else {
+                                                        setSearchParamsSubject(null);
+                                                    }
+                                                    form.setValue("subject_id", []);
+                                                    field.onChange(value)
+                                                }}
+                                                value={field.value}
+                                                placeholder="Select Department"
+                                            />
+                                            <FormMessage/>
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="subject_id"
+                                    render={({field}) => (
+                                        <FormItem>
+                                            <FormLabel className={cn("font-bold text-black")}>
+                                                Subject <span className="text-red-500">*</span>
+                                            </FormLabel>
+                                            <MultiSelect
+                                                isClearable={false}
+                                                options={listSubjectOptions}
+                                                loadMore={setPageChangeSubject()}
+                                                onValueChange={(value) => {
+                                                    setListTopicOptions([]);
+                                                    if (value && value.length > 0) {
+                                                        setSearchParamsTopic({
+                                                            active: 1,
+                                                            limit: 20,
+                                                            page: topicPage,
+                                                            subject_id: value,
+                                                            department_id: form.getValues("department_id"),
+                                                            order: JSON.stringify({"t.topic_id": "desc"}),
+                                                        })
+                                                    } else {
+                                                        setSearchParamsSubject(null);
+                                                    }
+                                                    form.setValue("topic_id", []);
+                                                    field.onChange(value)
+                                                }}
+                                                value={field.value}
+                                                placeholder="Select Subject"
+                                            />
                                             <FormMessage/>
                                         </FormItem>
                                     )}

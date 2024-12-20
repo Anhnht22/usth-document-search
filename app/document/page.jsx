@@ -91,6 +91,8 @@ const Document = () => {
                                     <TableHead className={cn("w-20")}>STT</TableHead>
                                     <TableHead className={cn("w-[250px]")}>Title</TableHead>
                                     <TableHead className={cn("w-[300px]")}>Description</TableHead>
+                                    <TableHead className={cn("min-w-[200px]")}>Department</TableHead>
+                                    <TableHead className={cn("min-w-[200px]")}>Subject</TableHead>
                                     <TableHead className={cn("min-w-[200px]")}>Topic</TableHead>
                                     <TableHead className={cn("min-w-[200px]")}>Keyword</TableHead>
                                     <TableHead className={cn("min-w-[300px]")}>File path</TableHead>
@@ -104,7 +106,7 @@ const Document = () => {
                                 {listData?.map((item, index) => {
                                     const {
                                         document_id, file_path, title, description, upload_date,
-                                        document_active, username, topic, status, keyword
+                                        document_active, username, topic, status, keyword, department, subject
                                     } = item;
                                     const uploadString = convertUnixDate(upload_date / 1000, ddMMyyyy);
 
@@ -113,6 +115,78 @@ const Document = () => {
                                             <TableCell>{(page - 1) * limits + index + 1}</TableCell>
                                             <TableCell>{title}</TableCell>
                                             <TableCell>{description}</TableCell>
+                                            <TableCell>
+                                                <div
+                                                    className={cn("flex gap-1.5 p-1 flex-wrap")}
+                                                >
+                                                    {department.map(({department_id, department_name}, i) => i < 2 && (
+                                                        <Badge
+                                                            key={department_id}
+                                                        >
+                                                            <span
+                                                                className={cn("truncate max-w-[200px]")}>{department_name}</span>
+                                                        </Badge>
+                                                    ))}
+
+                                                    {department.length - 2 > 0 && (
+                                                        <DropdownMenu>
+                                                            <DropdownMenuTrigger asChild>
+                                                                <Button variant="ghost"
+                                                                        className="p-3 border border-[#ccc] rounded bg-[#f0f0f0f] h-0 w-0">
+                                                                    <span>+{department.length - 2}</span>
+                                                                </Button>
+                                                            </DropdownMenuTrigger>
+                                                            <DropdownMenuContent align="end">
+                                                                {department.map((item, i) => {
+                                                                    const {department_id, department_name} = item;
+
+                                                                    return i >= 2 && (
+                                                                        <DropdownMenuItem key={department_id}>
+                                                                            {department_name}
+                                                                        </DropdownMenuItem>
+                                                                    )
+                                                                })}
+                                                            </DropdownMenuContent>
+                                                        </DropdownMenu>
+                                                    )}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <div
+                                                    className={cn("flex gap-1.5 p-1 flex-wrap")}
+                                                >
+                                                    {subject.map(({subject_id, subject_name}, i) => i < 2 && (
+                                                        <Badge
+                                                            key={subject_id}
+                                                        >
+                                                            <span
+                                                                className={cn("truncate max-w-[200px]")}>{subject_name}</span>
+                                                        </Badge>
+                                                    ))}
+
+                                                    {subject.length - 2 > 0 && (
+                                                        <DropdownMenu>
+                                                            <DropdownMenuTrigger asChild>
+                                                                <Button variant="ghost"
+                                                                        className="p-3 border border-[#ccc] rounded bg-[#f0f0f0f] h-0 w-0">
+                                                                    <span>+{subject.length - 2}</span>
+                                                                </Button>
+                                                            </DropdownMenuTrigger>
+                                                            <DropdownMenuContent align="end">
+                                                                {subject.map((item, i) => {
+                                                                    const {subject_id, subject_name} = item;
+
+                                                                    return i >= 2 && (
+                                                                        <DropdownMenuItem key={subject_id}>
+                                                                            {subject_name}
+                                                                        </DropdownMenuItem>
+                                                                    )
+                                                                })}
+                                                            </DropdownMenuContent>
+                                                        </DropdownMenu>
+                                                    )}
+                                                </div>
+                                            </TableCell>
                                             <TableCell>
                                                 <div
                                                     className={cn("flex gap-1.5 p-1 flex-wrap")}

@@ -43,6 +43,14 @@ const useTopic = (params) => {
     })
 }
 
+const useTopicParams = (params) => {
+    return useQuery({
+        queryKey: params ? [queryKeyTopic, JSON.stringify(params)] : null, // Không tạo queryKey nếu params null
+        queryFn: () => (params ? fetchTopic(params) : Promise.resolve(null)), // Không fetch nếu params null
+        enabled: !!params, // Tắt tự động fetch nếu params không tồn tại
+    });
+}
+
 const useUpdateTopic = () => {
     const queryClient = useQueryClient();
     return useMutation({
@@ -72,6 +80,7 @@ export {
     useCreateTopic,
     fetchTopic,
     useTopic,
+    useTopicParams,
     useUpdateTopic,
     useDeletePermanentlyTopic
 }

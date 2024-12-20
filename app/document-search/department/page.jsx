@@ -16,6 +16,8 @@ const DocumentSearch = () => {
         order: JSON.stringify({"t.department_name": "asc"})
     });
 
+    console.log("departmentResp: ", departmentResp)
+
     const [viewType, setViewType] = useState('grid');
 
     return (
