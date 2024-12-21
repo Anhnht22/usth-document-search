@@ -1,11 +1,10 @@
 "use client"
 
-import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,} from "@/components/ui/tooltip"
+import {TooltipProvider,} from "@/components/ui/tooltip"
 import {cn} from "@/lib/utils";
-import {Button} from "@/components/ui/button";
 import {usePathname, useSearchParams} from "next/navigation";
 import {useEffect, useMemo, useState} from "react";
-import {Building2, ChevronLeft, ChevronRight} from "lucide-react";
+import {ChevronRight} from "lucide-react";
 import Link from "next/link";
 import logo from "@/public/logo.png";
 import Image from "next/image";
@@ -14,6 +13,7 @@ import {useDepartments} from "@/hook/useDepartments";
 import {useSubject} from "@/hook/useSubject";
 import {useTopic} from "@/hook/useTopic";
 import clientRoutes from "@/routes/client";
+import {useDocumentSearchLeftToolbarProvider} from "@/provider/DocumentSearchLeftToolbarProvider";
 
 // const menuItems = [
 // {
@@ -27,6 +27,17 @@ import clientRoutes from "@/routes/client";
 // ]
 
 const DocumentSearchLeftToolbar = () => {
+    const {
+        isExpanded,
+        openMenus,
+        openSubMenus,
+        setIsExpanded,
+        setOpenMenus,
+        setOpenSubMenus,
+        toggleMenu,
+        toggleSubMenu
+    } = useDocumentSearchLeftToolbarProvider();
+
     const {role} = useAuth();
     const searchParams = useSearchParams();
 
@@ -41,23 +52,8 @@ const DocumentSearchLeftToolbar = () => {
         return item.value.roles.includes(role) ? [...acc, item] : acc
     }, []), [role, menuItems]);
 
-    const [isExpanded, setIsExpanded] = useState(true);
-    const [openMenus, setOpenMenus] = useState([]);
     const pathname = usePathname();
-
-    const toggleSidebar = () => {
-        setIsExpanded((prev) => !prev);
-    };
-
-    const toggleMenu = (menuName) => {
-        setOpenMenus(prev =>
-            prev.includes(menuName)
-                ? prev.filter(name => name !== menuName)
-                : [...prev, menuName]
-        )
-    }
-
-    const isActive = (href) => pathname === href || pathname.startsWith(href + '/')
+    const isActive = (href) => pathname === href || pathname.startsWith(href + '/');
 
     useEffect(() => {
         const sidebar = document.documentElement;
@@ -79,64 +75,114 @@ const DocumentSearchLeftToolbar = () => {
         });
     }, [pathname, openMenus]);
 
+    const [departmentDataAll, setDepartmentDataAll] = useState([]);
+    const [departmentPage, setDepartmentPage] = useState(1);
     const {data: departmentResp, isPending: isPendingDepartment} = useDepartments({
-        limit: -999,
+        limit: 20,
+        page: departmentPage,
         active: 1,
         order: JSON.stringify({"t.department_id": "desc"})
     });
+    useEffect(() => {
+        const {total: totalObj} = departmentResp || {};
+        const {limits, pages, total} = totalObj || {};
+        if (limits * pages < total) {
+            setDepartmentPage(prev => prev + 1)
+        }
+    }, [departmentResp]);
+    useEffect(() => {
+        if (departmentResp?.data) {
+            setDepartmentDataAll(prev => [
+                ...prev,
+                ...departmentResp.data.filter(department => !prev.some(prevDept => prevDept.department_id === department.department_id))
+            ])
+        }
+    }, [departmentResp]);
 
+    const [subjectDataAll, setSubjectDataAll] = useState([]);
+    const [subjectPage, setSubjectPage] = useState(1);
     const {data: subjectResp, isPending: isPendingSubject} = useSubject({
-        limit: -999,
+        limit: 20,
+        page: subjectPage,
         active: 1,
-        // department_id: department_id,
         order: JSON.stringify({"t.subject_id": "desc"})
     });
+    useEffect(() => {
+        const {total: totalObj} = subjectResp || {};
+        const {limits, pages, total} = totalObj || {};
+        if (limits * pages < total) {
+            setSubjectPage(prev => prev + 1)
+        }
+    }, [subjectResp]);
+    useEffect(() => {
+        if (subjectResp?.data) {
+            setSubjectDataAll(prev => [
+                ...prev,
+                ...subjectResp.data.filter(subject => !prev.some(prevDept => prevDept.subject_id === subject.subject_id))
+            ])
+        }
+    }, [subjectResp]);
 
+    const [topicDataAll, setTopicDataAll] = useState([]);
+    const [topicPage, setTopicPage] = useState(1);
     const {data: topicResp, isPending: isPendingTopic} = useTopic({
-        limit: -999,
+        limit: 20,
+        page: topicPage,
         active: 1,
-        // department_id: department_id,
-        // subject_id: subject_id,
         order: JSON.stringify({"t.topic_id": "desc"})
     });
+    useEffect(() => {
+        const {total: totalObj} = topicResp || {};
+        const {limits, pages, total} = totalObj || {};
+        if (limits * pages < total) {
+            setTopicPage(prev => prev + 1)
+        }
+    }, [topicResp]);
+    useEffect(() => {
+        if (topicResp?.data) {
+            setTopicDataAll(prev => [
+                ...prev,
+                ...topicResp.data.filter(topic => !prev.some(prevDept => prevDept.topic_id === topic.topic_id))
+            ])
+        }
+    }, [topicResp]);
 
     useEffect(() => {
-        if (isPendingDepartment || isPendingSubject || isPendingTopic) return;
-
         const menuItems = [];
-        departmentResp?.data?.forEach(departmentRespItem => {
-            const subjectItem = subjectResp?.data?.reduce((acc, subject) => {
+        departmentDataAll?.forEach(departmentRespItem => {
+            const subjectItem = subjectDataAll?.filter(subject =>
+                subject.department.some(dept => dept.department_id === departmentRespItem.department_id)
+            ).reduce((acc, subject) => {
                 const {department, subject_id, subject_name} = subject;
                 for (let i = 0; i < department.length; i++) {
                     const {department_id} = department[i];
                     if (department_id === departmentRespItem.department_id) {
+                        const topicItem = topicDataAll?.filter(topic =>
+                            topic.subject.some(sub => sub.subject_id === subject_id)
+                        ).map(topic => {
+                            const {topic_id, topic_name} = topic;
+                            return {
+                                value: {
+                                    title: topic_name,
+                                    path: clientRoutes.documentSearch.list.path + `?department_id=${department_id}&subject_id=${subject_id}&topic_id=${topic_id}`
+                                },
+                                subItems: null
+                            };
+                        });
+
                         acc.push({
-                            // icon: Building2,
                             value: {
                                 title: subject_name,
                                 path: clientRoutes.documentSearch.listTopic.path + `?department_id=${department_id}&subject_id=${subject_id}`
                             },
-                            subItems: null
-                            // subItems: topicResp?.data?.reduce((acc, topic) => {
-                            //     const {subject, topic_id, topic_name} = topic;
-                            //     subject.forEach(subject_id => {
-                            //         if (subject_id === subject.subject_id) {
-                            //             return [...acc, {
-                            //                 value: {title: topic_name, path: `/document-search/${department_id}/${subject_id}/${topic_id}`}
-                            //             }]
-                            //         }
-                            //     })
-                            //     return acc;
-                            // }, [])
-                        })
+                            subItems: topicItem
+                        });
                     }
                 }
-
                 return acc
-            }, [])
+            }, []);
 
             menuItems.push({
-                // icon: Building2,
                 value: {
                     title: departmentRespItem.department_name,
                     path: subjectItem?.length > 0 ? clientRoutes.documentSearch.listSubject.path + `?department_id=${departmentRespItem.department_id}` : null
@@ -146,7 +192,7 @@ const DocumentSearchLeftToolbar = () => {
         })
 
         setMenuItems(menuItems);
-    }, [departmentResp, subjectResp, topicResp]);
+    }, [departmentDataAll, subjectDataAll, topicDataAll]);
 
     return (
         <TooltipProvider>
@@ -164,63 +210,121 @@ const DocumentSearchLeftToolbar = () => {
                     />
                 </div>
 
-                <nav className="flex-1 mt-2 pt-3 overflow-y-auto overflow-x-hidden  ">
-                    {menuItemsByRole.map(({value, subItems, ...itemMenu}) => {
-                        return (
-                            <div key={value.title} className={cn("[&:not(:first-child)]:mt-2")}>
-                                <Tooltip delayDuration={100}>
-                                    <TooltipTrigger asChild>
-                                        <div
-                                            className={cn(
-                                                "flex items-start px-3 py-2 hover:bg-accent gap-2",
-                                                isActive(value.path) && "bg-accent text-accent-foreground",
-                                                !isExpanded && "justify-center"
-                                            )}
-                                        >
-                                            {itemMenu.icon && <itemMenu.icon className={cn("h-5 w-5")}/>}
-                                            {isExpanded && (
-                                                <Link href={value.path ? value.path : "#"}
-                                                      className={cn(
-                                                          "flex-1 line-clamp-2 h-full font-bold text-[#ff6500]",
-                                                          value.path ? "hover:underline" : ""
-                                                      )}
-                                                >
-                                                    {value.title}
-                                                </Link>
-                                            )}
-                                            <div
-                                                className={cn(
-                                                    "w-6 flex items-center justify-center h-full",
-                                                    "hover:cursor-pointer"
-                                                )}
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    subItems && toggleMenu(value.title)
-                                                }}
-                                            >
-                                                {isExpanded && subItems && (
-                                                    <p className={cn("")}>
-                                                        <ChevronRight
-
-                                                            className={cn(
-                                                                "transition-transform",
-                                                                openMenus.includes(value.title) && "transform rotate-90"
-                                                            )}/>
-                                                    </p>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </TooltipTrigger>
-                                    <TooltipContent className={cn(isExpanded && "hidden")} side="right">
+                <nav className="flex-1 mt-2 pt-3 overflow-y-auto overflow-x-hidden">
+                    {menuItemsByRole.map(({value, subItems, ...itemMenu}) => (
+                        <div key={value.title} className={cn("[&:not(:first-child)]:mt-2")}>
+                            <div
+                                className={cn("flex items-start px-3 py-2 hover:bg-accent gap-2", isActive(value.path) && "bg-accent text-accent-foreground", !isExpanded && "justify-center")}>
+                                {itemMenu.icon && <itemMenu.icon className={cn("h-5 w-5")}/>}
+                                {isExpanded && (
+                                    <Link href={value.path ? value.path : "#"}
+                                          className={cn("flex-1 line-clamp-2 h-full font-bold text-[#ff6500]", value.path ? "hover:underline" : "")}>
                                         {value.title}
-                                    </TooltipContent>
-                                </Tooltip>
-                                {isExpanded && subItems && openMenus.includes(value.title) && (
-                                    <div className="ml-6 border-l">
-                                        {subItems.map(({value: subValue}) => (
+                                    </Link>
+                                )}
+                                <div
+                                    className={cn("w-6 flex items-center justify-center h-full", "hover:cursor-pointer")}
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        subItems && toggleMenu(value.title)
+                                    }}>
+                                    {isExpanded && subItems && (
+                                        <p className={cn("")}>
+                                            <ChevronRight
+                                                className={cn("transition-transform", openMenus.includes(value.title) && "transform rotate-90")}/>
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                            {isExpanded && subItems && openMenus.includes(value.title) && (
+                                <div className="ml-6 border-l">
+                                    {subItems.map(({value: subValue, subItems: subSubItems}) => (
+                                        <div key={subValue.title}>
+                                            <div
+                                                className={cn("flex items-start px-3 py-2 hover:bg-accent gap-2", isActive(subValue.path) && "bg-accent text-accent-foreground", !isExpanded && "justify-center")}>
+                                                <Link href={subValue.path ? subValue.path : "#"}
+                                                      className={cn("flex-1 line-clamp-2 h-full font-bold text-[#ff6500]", subValue.path ? "hover:underline" : "")}>
+                                                    {subValue.title}
+                                                </Link>
+                                                <div
+                                                    className={cn("w-6 flex items-center justify-center h-full", "hover:cursor-pointer")}
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        subSubItems && toggleSubMenu(value.title + subValue.title)
+                                                    }}>
+                                                    {isExpanded && subSubItems && (
+                                                        <p className={cn("")}>
+                                                            <ChevronRight
+                                                                className={cn("transition-transform", openSubMenus.includes(value.title + subValue.title) && "transform rotate-90")}/>
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            {isExpanded && subSubItems && openSubMenus.includes(value.title + subValue.title) && (
+                                                <div className="ml-6 border-l">
+                                                    {subSubItems.map(({value: subSubValue}) => (
+                                                        <Link key={subSubValue.title}
+                                                              href={subSubValue.path ? subSubValue.path : "#"}
+                                                              className={cn("block p-2 pl-6 hover:bg-accent", isActive(subSubValue.path) && "bg-accent text-accent-foreground")}>
+                                                            {subSubValue.title}
+                                                        </Link>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                    {/*{menuItemsByRole.map(({value, subItems, ...itemMenu}) => (
+                        <div key={value.title} className={cn("[&:not(:first-child)]:mt-2")}>
+                            <div
+                                className={cn(
+                                    "flex items-start px-3 py-2 hover:bg-accent gap-2",
+                                    isActive(value.path) && "bg-accent text-accent-foreground",
+                                    !isExpanded && "justify-center"
+                                )}
+                            >
+                                {itemMenu.icon && <itemMenu.icon className={cn("h-5 w-5")}/>}
+                                {isExpanded && (
+                                    <Link href={value.path ? value.path : "#"}
+                                          className={cn(
+                                              "flex-1 line-clamp-2 h-full font-bold text-[#ff6500]",
+                                              value.path ? "hover:underline" : ""
+                                          )}
+                                    >
+                                        {value.title}
+                                    </Link>
+                                )}
+                                <div
+                                    className={cn(
+                                        "w-6 flex items-center justify-center h-full",
+                                        "hover:cursor-pointer"
+                                    )}
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        subItems && toggleMenu(value.title)
+                                    }}
+                                >
+                                    {isExpanded && subItems && (
+                                        <p className={cn("")}>
+                                            <ChevronRight
+                                                className={cn(
+                                                    "transition-transform",
+                                                    openMenus.includes(value.title) && "transform rotate-90"
+                                                )}
+                                            />
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                            {isExpanded && subItems && openMenus.includes(value.title) && (
+                                <div className="ml-6 border-l">
+                                    {subItems.map(({value: subValue, subItems: subSubItems}) => (
+                                        <div key={subValue.title}>
                                             <Link
-                                                key={subValue.title}
-                                                href={"/"}
+                                                href={subValue.path ? subValue.path : "#"}
                                                 className={cn(
                                                     "block p-2 pl-6 hover:bg-accent",
                                                     isActive(subValue.path) && "bg-accent text-accent-foreground"
@@ -228,24 +332,40 @@ const DocumentSearchLeftToolbar = () => {
                                             >
                                                 {subValue.title}
                                             </Link>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        )
-                    })}
+                                            {subSubItems && (
+                                                <div className="ml-6 border-l">
+                                                    {subSubItems.map(({value: subSubValue}) => (
+                                                        <Link
+                                                            key={subSubValue.title}
+                                                            href={subSubValue.path ? subSubValue.path : "#"}
+                                                            className={cn(
+                                                                "block p-2 pl-6 hover:bg-accent",
+                                                                isActive(subSubValue.path) && "bg-accent text-accent-foreground"
+                                                            )}
+                                                        >
+                                                            {subSubValue.title}
+                                                        </Link>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    ))}*/}
                 </nav>
 
-                <div
-                    className={cn(
-                        "pt-2 flex",
-                        isExpanded ? "justify-end" : "justify-center"
-                    )}
-                >
-                    <Button variant="ghost" size="icon" onClick={toggleSidebar}>
-                        {isExpanded ? <ChevronLeft/> : <ChevronRight/>}
-                    </Button>
-                </div>
+                {/*<div*/}
+                {/*    className={cn(*/}
+                {/*        "pt-2 flex",*/}
+                {/*        isExpanded ? "justify-end" : "justify-center"*/}
+                {/*    )}*/}
+                {/*>*/}
+                {/*    <Button variant="ghost" size="icon" onClick={toggleSidebar}>*/}
+                {/*        {isExpanded ? <ChevronLeft/> : <ChevronRight/>}*/}
+                {/*    </Button>*/}
+                {/*</div>*/}
             </div>
         </TooltipProvider>
     );
