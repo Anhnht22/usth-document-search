@@ -12,7 +12,6 @@ import {useTopic} from "@/hook/useTopic";
 import {MultiSelect} from "@/components/ui/multi-select";
 import {useSearchParams} from "next/navigation";
 import {useKeyword} from "@/hook/useKeyword";
-import useDebounce from "@/hook/useDebounce";
 
 const defaultValues = {
     subject_id: [],
@@ -46,32 +45,52 @@ const SearchForm = ({onChangeFilter}) => {
         []
     );
 
-    const filledFormRef = useRef([]);
+    const filledFormRef = useRef({});
     useEffect(() => {
-        if (form.getValues().subject_id?.length <= 0 && filledFormRef.current.indexOf('subject_id') === -1) {
+        const key = 'subject_id';
+        const jsonString = JSON.stringify(subject_id);
+        if (filledFormRef.current[key] !== jsonString) {
             form.setValue("subject_id", subject_id.map(item => Number(item)))
-            filledFormRef.current.push('subject_id')
+            filledFormRef.current = {
+                ...filledFormRef.current,
+                [key]: jsonString
+            }
         }
     }, [subject_id]);
 
     useEffect(() => {
-        if (form.getValues().department_id?.length <= 0 && filledFormRef.current.indexOf('department_id') === -1) {
+        const key = 'department_id';
+        const jsonString = JSON.stringify(department_id);
+        if (filledFormRef.current[key] !== jsonString) {
             form.setValue("department_id", department_id.map(item => Number(item)))
-            filledFormRef.current.push('department_id')
+            filledFormRef.current = {
+                ...filledFormRef.current,
+                [key]: jsonString
+            }
         }
     }, [department_id]);
 
     useEffect(() => {
-        if (form.getValues().topic_id?.length <= 0 && filledFormRef.current.indexOf('topic_id') === -1) {
+        const key = 'topic_id';
+        const jsonString = JSON.stringify(topic_id);
+        if (filledFormRef.current[key] !== jsonString) {
             form.setValue("topic_id", topic_id.map(item => Number(item)))
-            filledFormRef.current.push('topic_id')
+            filledFormRef.current = {
+                ...filledFormRef.current,
+                [key]: jsonString
+            }
         }
     }, [topic_id]);
 
     useEffect(() => {
-        if (form.getValues().keyword_id?.length <= 0 && filledFormRef.current.indexOf('keyword_id') === -1) {
+        const key = 'keyword_id';
+        const jsonString = JSON.stringify(keyword_id);
+        if (filledFormRef.current[key] !== jsonString) {
             form.setValue("keyword_id", keyword_id.map(item => Number(item)))
-            filledFormRef.current.push('keyword_id')
+            filledFormRef.current = {
+                ...filledFormRef.current,
+                [key]: jsonString
+            }
         }
     }, [keyword_id]);
 
